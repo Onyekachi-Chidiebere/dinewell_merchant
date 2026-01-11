@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, ViewStyle, TextInput, Pressable, FlatList, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, ViewStyle, TextInput, Pressable, FlatList, TouchableOpacity, Image, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors } from '../theme/colors';
@@ -196,7 +196,6 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
                     points: item.points
                 })),
                 totalPrice: totalPrice,
-                pointsPerDollar: POINTS_PER_DOLLAR,
                 notes: `Points ${type} transaction`
             };
             const response = await axios.post('/points', requestData);
@@ -226,11 +225,17 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
 
     return (
         <SafeAreaView style={styles.container}>
+            <KeyboardAvoidingView 
+                style={{flex:1}}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+            >
             <BackButton />
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContainer}
                 showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
             >
                 <View style={styles.content}>
                     <View style={styles.header}>
@@ -452,6 +457,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
                         </View>
                     )}
                 </View>
+                
             </ScrollView>
 
             {/* Fixed Bottom Section */}
@@ -501,6 +507,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
                     </Pressable>
                 </View>
             </View>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
@@ -580,7 +587,7 @@ const styles = StyleSheet.create({
         minHeight: 812,
     },
     scrollContainer: {
-        paddingBottom: 20,
+        paddingBottom: 200, // Extra padding to ensure content is scrollable above keyboard
         paddingHorizontal: 20,
     },
     content: {
@@ -861,7 +868,7 @@ const styles = StyleSheet.create({
     bottomSection: {
         backgroundColor: colors.background.default,
         paddingHorizontal: 20,
-        paddingBottom: 20,
+        paddingBottom: Platform.OS === 'ios' ? 20 : 10,
         paddingTop: 16,
         borderTopWidth: 1,
         borderTopColor: colors.border.fade,

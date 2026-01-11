@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, ScrollView } from 'react-native';
 import typography from '../theme/typography';
 import colors from '../theme/colors';
 import GreyBackground from '../assets/icons/grey-background.svg';
@@ -32,12 +32,11 @@ const AddDishContent = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}  showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View style={styles.iconCircle}>
           <LinearGradient
             style={styles.iconGradient}
-
             start={{ x: 0.25, y: 0.25 }}
             end={{ x: 0.5, y: 2 }}
             locations={[0, 0.95]}
@@ -48,16 +47,18 @@ const AddDishContent = () => {
         </View>
         <Text style={styles.title}>To Create A New Dish</Text>
         <Text style={styles.subTitle}>Follow the instructions below</Text>
-
       </View>
 
       <View style={styles.infoBox}>
-        <Text style={styles.infoBoxTitle}>Points per Dollar</Text>
+        <Text style={styles.infoBoxTitle}>Instructions</Text>
         <Text style={styles.infoBoxText}>
-          This refers to how many points a customer will be given if they spent only $1 dollar on a meal.
+          1. Enter the name of the dish you want to create.
         </Text>
         <Text style={styles.infoBoxText}>
-          Base points per dish is the multiplication of the points per dollar and the price of dish.
+          2. Enter the amount per dish.
+        </Text>
+        <Text style={styles.infoBoxText}>
+          3. Press create dish to complete the process.
         </Text>
       </View>
       <View style={styles.customInputContainer}>
@@ -80,42 +81,19 @@ const AddDishContent = () => {
           onChangeText={(v) => setField('price', v)}
         />
       </View>
-      <View style={styles.customInputContainer}>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Points per dollar"
-          placeholderTextColor={colors.text.tertiary}
-          keyboardType="numeric"
-          value={String(fields.points_per_dollar)}
-          onChangeText={(v) => setField('points_per_dollar', v)}
-        />
-      </View>
+      
       <View style={styles.customInputContainer}>
         <Text style={styles.input}>{dishImage?.fileName || 'Dish Image'}</Text>
         <Pressable onPress={pickDishImage} style={styles.iconContainer}>
           <ImageIcon />
         </Pressable>
       </View>
-      <View style={styles.basePointsRow}>
-        <View style={styles.baseBg}>
-          <GreyBackground />
-        </View>
-        <Text style={styles.baseLabel}>BASE POINTS PER DISH</Text>
-        <TextInput
-          style={styles.baseInput}
-          placeholder="0"
-          placeholderTextColor={colors.text.tertiary}
-          keyboardType="numeric"
-          value={String(fields.base_points_per_dish)}
-          onChangeText={(v) => setField('base_points_per_dish', v)}
-        />
-      </View>
+      
 
       <Pressable onPress={onCreate} style={styles.createButton} disabled={loading}>
         <Text style={styles.createText}>{loading ? 'Creating...' : 'Create Dish'}</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -223,7 +201,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     backgroundColor: colors.background.paper,
   },
-  createButton: { backgroundColor: colors.primary.main, padding: 16, borderRadius: 40, alignItems: 'center' },
+  createButton: { marginTop:10,backgroundColor: colors.primary.main, padding: 16, borderRadius: 40, alignItems: 'center', marginBottom:20 },
   createText: { color: colors.text.white, fontWeight: '700' },
 });
 

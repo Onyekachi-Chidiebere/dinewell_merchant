@@ -14,17 +14,17 @@ import LinearGradient from 'react-native-linear-gradient';
 
 interface Props {
   availablePoints: number;
-  onShare: (points: number, phoneNumber: string) => void;
+  onShare: (points: number, username: string) => void;
 }
 
 const SharePointsContent = ({ availablePoints, onShare }: Props) => {
   const [points, setPoints] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [username, setPhoneNumber] = useState('');
 
   const handleShare = () => {
     const pointsNumber = parseInt(points, 10);
-    if (pointsNumber && phoneNumber) {
-      onShare(pointsNumber, phoneNumber);
+    if (pointsNumber && username) {
+      onShare(pointsNumber, username);
       setPoints('');
       setPhoneNumber('');
     }
@@ -54,16 +54,13 @@ const SharePointsContent = ({ availablePoints, onShare }: Props) => {
 
       {/* Instructions */}
       <View style={styles.instructionsContainer}>
+       
         <View style={styles.instructionsItem}>
           <Text style={styles.instructionsNo}>1</Text>
-          <Text style={styles.instructions}>Select the restaurant you want transfer points from (The points balance for that restaurant will be shown in the area provided)</Text>
-        </View>
-        <View style={styles.instructionsItem}>
-          <Text style={styles.instructionsNo}>2</Text>
           <Text style={styles.instructions}>Input the username of the recipient in the field provided.</Text>
         </View>
         <View style={styles.instructionsItem}>
-          <Text style={styles.instructionsNo}>3</Text>
+          <Text style={styles.instructionsNo}>2</Text>
           <Text style={styles.instructions}>Input the amount of points you want to transfer (you cannot transfer more than your available points)</Text>
         </View>
         <View style={styles.instructionsItem}>
@@ -77,12 +74,12 @@ const SharePointsContent = ({ availablePoints, onShare }: Props) => {
       <View style={styles.formSection}>
         {/* Restaurant Selector */}
         <View style={styles.inputGroup}>
-          <TouchableOpacity style={styles.restaurantSelector}>
+          {/* <TouchableOpacity style={styles.restaurantSelector}>
             <Text style={styles.restaurantText}>KFC</Text>
             <View style={styles.dropdownIcon}>
               <View style={styles.dropdownIconInner} />
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* Points Balance */}
           <View style={styles.balanceContainer}>
@@ -95,7 +92,7 @@ const SharePointsContent = ({ availablePoints, onShare }: Props) => {
         <View style={styles.inputGroup}>
           <TextInput
             style={styles.input}
-            value={phoneNumber}
+            value={username}
             onChangeText={setPhoneNumber}
             placeholder="Recipient username"
             placeholderTextColor="#828DA9"
@@ -118,10 +115,10 @@ const SharePointsContent = ({ availablePoints, onShare }: Props) => {
         <TouchableOpacity 
           style={[
             styles.transferButton,
-            (!points || !phoneNumber) && styles.transferButtonDisabled
+            (!points || !username) && styles.transferButtonDisabled
           ]}
           onPress={handleShare}
-          disabled={!points || !phoneNumber}
+          disabled={!points || !username}
         >
           <Text style={[
             styles.transferButtonText,
