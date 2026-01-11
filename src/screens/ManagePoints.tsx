@@ -36,8 +36,12 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
     const { openDishSheet } = useBottomSheet();
     const { user } = useAppContext();
 
-    // Points calculation settings - this should come from server in production
-    const POINTS_PER_DOLLAR = 10; // Default rate: 10 points per $1 spent
+    // Points rate state - fetched from server
+    const [pointsRate, setPointsRate] = useState<{ issue: number; redeem: number }>({
+        issue: 0, // Default fallback
+        redeem: 0 // Default fallback
+    });
+    const [loadingPointsRate, setLoadingPointsRate] = useState(true);
 
     // Local state for dropdown
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -77,9 +81,33 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
         fetchDishes();
     }, []);
 
+    // Fetch points rate from server on mount
+    useEffect(() => {
+        const fetchPointsRate = async () => {
+            try {
+                setLoadingPointsRate(true);
+                const response = await axios.get('/rate');
+                setPointsRate(response.data);
+            } catch (error: any) {
+                console.error('Error fetching points rate:', error);
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error',
+                    text2: error.response?.data?.error || 'Failed to fetch points rate'
+                });
+                // Keep default values on error
+            } finally {
+                setLoadingPointsRate(false);
+            }
+        };
+
+        fetchPointsRate();
+    }, []);
+
     // Helper function to calculate points based on price
     const calculatePointsFromPrice = (price: number): number => {
-        return Math.round(price * POINTS_PER_DOLLAR);
+        const rate = pointsRate[type.toLowerCase() as 'issue' | 'redeem'];
+        return Math.round(price * rate);
     };
 
     // Helper functions
