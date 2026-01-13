@@ -11,6 +11,7 @@ import {
   Pressable,
   Modal,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import colors from '../theme/colors';
 import typography from '../theme/typography';
@@ -24,38 +25,64 @@ import CalendarIcon from '../assets/icons/CalendarIcon.svg';
 import ClockIcon from '../assets/icons/ClockIcon.svg';
 import CloseIcon from '../assets/icons/close.svg';
 import CardIcon from '../assets/icons/CardIcon.svg';
+import axios from '../api/axios';
+import { useAppContext } from '../context/AppContext';
+import Toast from 'react-native-toast-message';
 
+interface Transaction {
+  id: number;
+  amount: number;
+  points: number;
+  type: 'issued' | 'redeemed';
+  date: string;
+  customer: string;
+}
+
+interface TransactionGroup {
+  date: string;
+  transactions: Transaction[];
+}
 
 const PointHistoryScreen = () => {
+  const { user } = useAppContext();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [showBundle, setShowBundle] = useState(false);
   const [showActivity, setShowActivity] = useState(false);
-  const [transactions, setTransactions] = useState([]);
-  const [trasactionDetails, setTrasactionDetails] = useState(null);
+  const [transactions, setTransactions] = useState<TransactionGroup[]>([]);
+  const [trasactionDetails, setTrasactionDetails] = useState<Transaction | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchTransactions = async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get(`/restaurants/${user.id}/points/history`, {
+        params: { searchQuery: searchQuery.trim() }
+      });
+      setTransactions(response.data || []);
+    } catch (err: any) {
+      console.error('Error fetching points history:', err);
+      setError(err.response?.data?.error || 'Failed to fetch transactions');
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: err.response?.data?.error || 'Failed to fetch transactions'
+      });
+      setTransactions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setTransactions(getTransactions());
-  }, [searchQuery]);
-
-  const getTransactions = ( searchQuery: string ) => {
-    return [
-      {
-        date: '01/05/2025',
-        transactions: [
-          { id: 1, amount: 100, points: 1000, type: 'redeemed', date: '2021-01-01', customer: 'John Doe' },
-          { id: 2,  amount: 200, points: 2000, type: 'issued', date: '2021-01-02', customer: 'Jane Doe' },
-        ],
-      },
-      {
-        date: '08/05/2025',
-        transactions: [
-          { id: 2, amount: 200, points: 2000, type: 'redeemed', date: '2021-01-02', customer: 'John Doe' },
-          { id: 3, amount: 300, points: 3000, type: 'redeemed', date: '2021-01-03', customer: 'Jane Doe' },
-        ],
-      },
-     
-    ];
-  };
+    fetchTransactions();
+  }, [user?.id, searchQuery]);
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -75,37 +102,64 @@ const PointHistoryScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <FlatList
-        data={transactions}
-        renderItem={({ item }) => (
-          <>
-            <View style={styles.dateTag}>
-              <Text style={styles.dateTagText}>{item.date}</Text>
-            
-            </View>
-            {item.transactions.map((transaction) => (
-                 <Pressable onPress={() => setShowActivity(true)} style={styles.activityItem}>
-                 <View style={styles.activityInfo}>
-                   <View style={styles.avatarContainer}>
-                     <View style={styles.activityIcon}>
-                       {transaction.type === 'redeemed' ? <ArrowDownIcon /> : <ArrowUpIcon />}
-                     </View>
-                   </View>
-                   <View>
-                     <Text style={styles.activityTitle}>Points {transaction.type === 'redeemed' ? 'Redeemed' : 'Issued'}</Text>
-                     <Text style={styles.activitySubtitle}>{transaction.type === 'redeemed' ?  `By ${transaction.customer}` : `To ${transaction.customer}`}</Text>
-                   </View>
-                 </View>
-                 <View style={styles.activityPoints}>
-                   <Text style={transaction.type === 'redeemed' ? styles.pointsRedeemed : styles.pointsIssued}>N{transaction.amount}</Text>
-                   <Text style={styles.pointsBalance}>{transaction.points}</Text>
-                 </View>
-               </Pressable>
-               
+      {loading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={colors.primary.main} />
+          <Text style={styles.loadingText}>Loading transactions...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.centerContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <Pressable style={styles.retryButton} onPress={fetchTransactions}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : transactions.length === 0 ? (
+        <View style={styles.centerContainer}>
+          <Text style={styles.emptyText}>No transactions found</Text>
+          {searchQuery && (
+            <Text style={styles.emptySubtext}>Try adjusting your search</Text>
+          )}
+        </View>
+      ) : (
+        <FlatList
+          data={transactions}
+          renderItem={({ item }) => (
+            <>
+              <View style={styles.dateTag}>
+                <Text style={styles.dateTagText}>{item.date}</Text>
+              </View>
+              {item.transactions.map((transaction: Transaction) => (
+                <Pressable 
+                  key={transaction.id} 
+                  onPress={() => {
+                    setTrasactionDetails(transaction);
+                    setShowActivity(true);
+                  }} 
+                  style={styles.activityItem}
+                >
+                  <View style={styles.activityInfo}>
+                    <View style={styles.avatarContainer}>
+                      <View style={styles.activityIcon}>
+                        {transaction.type === 'redeemed' ? <ArrowDownIcon /> : <ArrowUpIcon />}
+                      </View>
+                    </View>
+                    <View>
+                      <Text style={styles.activityTitle}>Points {transaction.type === 'redeemed' ? 'Redeemed' : 'Issued'}</Text>
+                      <Text style={styles.activitySubtitle}>{transaction.type === 'redeemed' ?  `By ${transaction.customer}` : `To ${transaction.customer}`}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.activityPoints}>
+                    <Text style={transaction.type === 'redeemed' ? styles.pointsRedeemed : styles.pointsIssued}>N{transaction.amount}</Text>
+                    <Text style={styles.pointsBalance}>{transaction.points}</Text>
+                  </View>
+                </Pressable>
               ))}
-          </>
-        )}
-      />
+            </>
+          )}
+          keyExtractor={(item, index) => `date-${item.date}-${index}`}
+        />
+      )}
     
 
       
@@ -731,6 +785,47 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.text.primary,
     fontWeight: '700',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  loadingText: {
+    ...typography.body2,
+    color: colors.text.secondary,
+    marginTop: 12,
+  },
+  errorText: {
+    ...typography.body1,
+    color: colors.status.error,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  emptyText: {
+    ...typography.body1,
+    color: colors.text.secondary,
+    textAlign: 'center',
+  },
+  emptySubtext: {
+    ...typography.body2,
+    color: colors.text.tertiary,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  retryButton: {
+    backgroundColor: colors.primary.main,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 24,
+    marginTop: 16,
+  },
+  retryButtonText: {
+    ...typography.body1,
+    color: colors.text.white,
+    fontWeight: '600',
   },
 });
 
