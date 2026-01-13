@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,17 +7,14 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
-  Dimensions,
   Image,
   Pressable,
   Modal,
+  FlatList,
 } from 'react-native';
 import colors from '../theme/colors';
 import typography from '../theme/typography';
 import { SearchIcon, NotificationIcon } from '../assets/icons';
-import { useBottomSheet } from '../context/BottomSheetContext';
-import DashBackground from '../assets/icons/dash-background.svg';
-import RefreshIcon from '../assets/icons/RefreshIcon.svg';
 import ArrowDownIcon from '../assets/icons/ArrowDownIcon.svg';
 import ArrowUpIcon from '../assets/icons/ArrowUpIcon.svg';
 import DollarIcon from '../assets/icons/DollarIcon.svg';
@@ -33,9 +30,32 @@ const PointHistoryScreen = () => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [showBundle, setShowBundle] = useState(false);
   const [showActivity, setShowActivity] = useState(false);
-  const [type, setType] = useState<'bundles' | 'activity'>('bundles');
+  const [transactions, setTransactions] = useState([]);
+  const [trasactionDetails, setTrasactionDetails] = useState(null);
 
+  useEffect(() => {
+    setTransactions(getTransactions());
+  }, [searchQuery]);
 
+  const getTransactions = ( searchQuery: string ) => {
+    return [
+      {
+        date: '01/05/2025',
+        transactions: [
+          { id: 1, amount: 100, points: 1000, type: 'redeemed', date: '2021-01-01', customer: 'John Doe' },
+          { id: 2,  amount: 200, points: 2000, type: 'issued', date: '2021-01-02', customer: 'Jane Doe' },
+        ],
+      },
+      {
+        date: '08/05/2025',
+        transactions: [
+          { id: 2, amount: 200, points: 2000, type: 'redeemed', date: '2021-01-02', customer: 'John Doe' },
+          { id: 3, amount: 300, points: 3000, type: 'redeemed', date: '2021-01-03', customer: 'Jane Doe' },
+        ],
+      },
+     
+    ];
+  };
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -55,120 +75,40 @@ const PointHistoryScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-
-      <View style={styles.pointsCard}>
-        <View style={styles.pointsBackground}>
-          <DashBackground />
-        </View>
-        <View style={styles.pointsHeader}>
-          <Text style={styles.pointsLabel}>ACTIVE BUNDLE </Text>
-          <View style={styles.pointsValue}>
-            <Text style={styles.pointsNumber}>MM2</Text>
-          </View>
-        </View>
-
-        <View style={styles.pointsStats}>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Points Received</Text>
-            <Text style={styles.statValue}>2300 PTS</Text>
-          </View>
-          <View style={[styles.statItem, { alignItems: 'flex-end' }]}>
-            <Text style={styles.statLabel}>Points Left</Text>
-            <Text style={styles.statValue}>2100 PTS</Text>
-          </View>
-        </View>
-      </View>
-      <View style={styles.typeContainer}>
-        <Pressable onPress={() => setType('bundles')} style={type === 'bundles' ? styles.typeButtonActive : styles.typeButtonInactive}>
-          <Text style={type === 'bundles' ? styles.typeButtonTextActive : styles.typeButtonTextInactive}>Bundles History</Text>
-        </Pressable>
-        <Pressable onPress={() => setType('activity')} style={type === 'activity' ? styles.typeButtonActive : styles.typeButtonInactive}>
-          <Text style={type === 'activity' ? styles.typeButtonTextActive : styles.typeButtonTextInactive}>Activity</Text>
-        </Pressable>
-      </View>
-
-      {type === 'bundles' ? <ScrollView style={styles.content}>
-        <View style={styles.historyContainer}>
-          <View style={styles.dateTag}>
-            <Text style={styles.dateTagText}>Today</Text>
-          </View>
-          <Pressable style={styles.historyItem} onPress={() => setShowBundle(true)}>
-            <Text style={styles.bundleName}>MM2</Text>
-            <View style={styles.bundleDetails}>
-              <Text style={styles.bundlePoints}>2200 <Text style={styles.bundlePointsUnit}>Pts</Text></Text>
-              <View style={styles.bundlePriceContainer}>
-                <Text style={styles.bundlePrice}>$120</Text>
-              </View>
-              <Pressable style={styles.refreshButton}>
-                <RefreshIcon width={16} height={16} />
-              </Pressable>
-            </View>
-          </Pressable>
-        </View>
-        <Pressable style={styles.historyContainer} onPress={() => setShowBundle(true)}>
-          <View style={styles.dateTag}>
-            <Text style={styles.dateTagText}>09/05/2025</Text>
-          </View>
-          <View style={styles.historyItem}>
-            <Text style={styles.bundleName}>MM2</Text>
-            <View style={styles.bundleDetails}>
-              <Text style={styles.bundlePoints}>2200 <Text style={styles.bundlePointsUnit}>Pts</Text></Text>
-              <View style={styles.bundlePriceContainer}>
-                <Text style={styles.bundlePrice}>$120</Text>
-              </View>
-              <Pressable style={styles.refreshButton}>
-                <RefreshIcon width={16} height={16} />
-              </Pressable>
-            </View>
-          </View>
-        </Pressable>
-      </ScrollView>
-        :
-        <ScrollView>
-          <View style={styles.activityContainer}>
+      <FlatList
+        data={transactions}
+        renderItem={({ item }) => (
+          <>
             <View style={styles.dateTag}>
-              <Text style={styles.dateTagText}>Today</Text>
+              <Text style={styles.dateTagText}>{item.date}</Text>
+            
             </View>
-            <View style={styles.activityList}>
-              <Pressable onPress={() => setShowActivity(true)} style={styles.activityItem}>
-                <View style={styles.activityInfo}>
-                  <View style={styles.avatarContainer}>
-                    <Image source={require('../assets/images/avatar.png')} style={styles.avatar} />
-                    <View style={styles.activityIcon}>
-                      <ArrowDownIcon />
-                    </View>
-                  </View>
-                  <View>
-                    <Text style={styles.activityTitle}>Points Redeemed</Text>
-                    <Text style={styles.activitySubtitle}>By John Ayodele</Text>
-                  </View>
-                </View>
-                <View style={styles.activityPoints}>
-                  <Text style={styles.pointsRedeemed}>2,300</Text>
-                  <Text style={styles.pointsBalance}>5,650</Text>
-                </View>
-              </Pressable>
-              <Pressable onPress={() => setShowActivity(true)} style={styles.activityItem}>
-                <View style={styles.activityInfo}>
-                  <View style={styles.avatarContainer}>
-                    <Image source={require('../assets/images/avatar.png')} style={styles.avatar} />
-                    <View style={styles.activityIcon}>
-                      <ArrowUpIcon />
-                    </View>
-                  </View>
-                  <View>
-                    <Text style={styles.activityTitle}>Points Issued</Text>
-                    <Text style={styles.activitySubtitle}>To John Ayodele</Text>
-                  </View>
-                </View>
-                <View style={styles.activityPoints}>
-                  <Text style={styles.pointsIssued}>2,300</Text>
-                  <Text style={styles.pointsBalance}>5,650</Text>
-                </View>
-              </Pressable>
-            </View>
-          </View>
-        </ScrollView>}
+            {item.transactions.map((transaction) => (
+                 <Pressable onPress={() => setShowActivity(true)} style={styles.activityItem}>
+                 <View style={styles.activityInfo}>
+                   <View style={styles.avatarContainer}>
+                     <View style={styles.activityIcon}>
+                       {transaction.type === 'redeemed' ? <ArrowDownIcon /> : <ArrowUpIcon />}
+                     </View>
+                   </View>
+                   <View>
+                     <Text style={styles.activityTitle}>Points {transaction.type === 'redeemed' ? 'Redeemed' : 'Issued'}</Text>
+                     <Text style={styles.activitySubtitle}>{transaction.type === 'redeemed' ?  `By ${transaction.customer}` : `To ${transaction.customer}`}</Text>
+                   </View>
+                 </View>
+                 <View style={styles.activityPoints}>
+                   <Text style={transaction.type === 'redeemed' ? styles.pointsRedeemed : styles.pointsIssued}>N{transaction.amount}</Text>
+                   <Text style={styles.pointsBalance}>{transaction.points}</Text>
+                 </View>
+               </Pressable>
+               
+              ))}
+          </>
+        )}
+      />
+    
+
+      
       <Modal
         visible={showBundle}
         transparent
@@ -183,80 +123,80 @@ const PointHistoryScreen = () => {
                 <CloseIcon width={24} height={24} color="#fff" />
               </TouchableOpacity>
             </View>
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>General Details</Text>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Bundle Price</Text>
-                  <View style={styles.detailValueContainer}>
-                    <DollarIcon />
-                    <View style={styles.separator} />
-                    <Text style={styles.detailValue}>100</Text>
-                  </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>General Details</Text>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Bundle Price</Text>
+                <View style={styles.detailValueContainer}>
+                  <DollarIcon />
+                  <View style={styles.separator} />
+                  <Text style={styles.detailValue}>100</Text>
                 </View>
               </View>
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Bundle Details</Text>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Points Received</Text>
-                  <View style={styles.detailValueContainer}>
-                    <ArrowSimpleDownIcon />
-                    <View style={styles.separator} />
-                    <Text style={styles.detailValue}>2200</Text>
-                  </View>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Points Issued</Text>
-                  <View style={styles.detailValueContainer}>
-                    <ArrowSimpleUpIcon />
-                    <View style={styles.separator} />
-                    <Text style={styles.detailValue}>1100</Text>
-                  </View>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Points Left</Text>
-                  <View style={styles.detailValueContainer}>
-                    <CalendarIcon />
-                    <View style={styles.separator} />
-                    <Text style={styles.detailValue}>1100</Text>
-                  </View>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Active Days Left</Text>
-                  <View style={styles.detailValueContainer}>
-                    <ClockIcon />
-                    <View style={styles.separator} />
-                    <Text style={styles.detailValue}>32 Days</Text>
-                  </View>
+            </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Bundle Details</Text>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Points Received</Text>
+                <View style={styles.detailValueContainer}>
+                  <ArrowSimpleDownIcon />
+                  <View style={styles.separator} />
+                  <Text style={styles.detailValue}>2200</Text>
                 </View>
               </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Points Issued</Text>
+                <View style={styles.detailValueContainer}>
+                  <ArrowSimpleUpIcon />
+                  <View style={styles.separator} />
+                  <Text style={styles.detailValue}>1100</Text>
+                </View>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Points Left</Text>
+                <View style={styles.detailValueContainer}>
+                  <CalendarIcon />
+                  <View style={styles.separator} />
+                  <Text style={styles.detailValue}>1100</Text>
+                </View>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Active Days Left</Text>
+                <View style={styles.detailValueContainer}>
+                  <ClockIcon />
+                  <View style={styles.separator} />
+                  <Text style={styles.detailValue}>32 Days</Text>
+                </View>
+              </View>
+            </View>
 
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Other Details</Text>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Purchase mode</Text>
-                  <View style={styles.detailValueContainer}>
-                    <CardIcon />
-                    <View style={styles.separator} />
-                    <Text style={styles.detailValue}>Card</Text>
-                  </View>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Date</Text>
-                  <View style={styles.detailValueContainer}>
-                    <CalendarIcon />
-                    <View style={styles.separator} />
-                    <Text style={styles.detailValue}>7th, June 2024</Text>
-                  </View>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Time</Text>
-                  <View style={styles.detailValueContainer}>
-                    <ClockIcon />
-                    <View style={styles.separator} />
-                    <Text style={styles.detailValue}>6:42pm</Text>
-                  </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Other Details</Text>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Purchase mode</Text>
+                <View style={styles.detailValueContainer}>
+                  <CardIcon />
+                  <View style={styles.separator} />
+                  <Text style={styles.detailValue}>Card</Text>
                 </View>
               </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Date</Text>
+                <View style={styles.detailValueContainer}>
+                  <CalendarIcon />
+                  <View style={styles.separator} />
+                  <Text style={styles.detailValue}>7th, June 2024</Text>
+                </View>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Time</Text>
+                <View style={styles.detailValueContainer}>
+                  <ClockIcon />
+                  <View style={styles.separator} />
+                  <Text style={styles.detailValue}>6:42pm</Text>
+                </View>
+              </View>
+            </View>
           </View>
         </View>
       </Modal>
@@ -274,52 +214,52 @@ const PointHistoryScreen = () => {
                 <CloseIcon width={24} height={24} color="#fff" />
               </TouchableOpacity>
             </View>
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>General Details</Text>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Type Price</Text>
-                  <View style={styles.detailValueContainer}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>General Details</Text>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Type Price</Text>
+                <View style={styles.detailValueContainer}>
                   <ArrowSimpleDownIcon />
-                    <View style={styles.separator} />
-                    <Text style={styles.detailValue}>Point Redeemed</Text>
-                  </View>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Points</Text>
-                  <View style={styles.detailValueContainer}>
-                    <View style={styles.separator} />
-                    <Text style={styles.detailValue}>50</Text>
-                  </View>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Customer</Text>
-                  <View style={styles.detailValueContainer}>
-                    <View style={styles.separator} />
-                    <Text style={styles.detailValue}>Chidi Samuel</Text>
-                  </View>
+                  <View style={styles.separator} />
+                  <Text style={styles.detailValue}>Point Redeemed</Text>
                 </View>
               </View>
-             
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Other Details</Text>
-              
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Date</Text>
-                  <View style={styles.detailValueContainer}>
-                    <CalendarIcon />
-                    <View style={styles.separator} />
-                    <Text style={styles.detailValue}>7th, June 2024</Text>
-                  </View>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Time</Text>
-                  <View style={styles.detailValueContainer}>
-                    <ClockIcon />
-                    <View style={styles.separator} />
-                    <Text style={styles.detailValue}>6:42pm</Text>
-                  </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Points</Text>
+                <View style={styles.detailValueContainer}>
+                  <View style={styles.separator} />
+                  <Text style={styles.detailValue}>50</Text>
                 </View>
               </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Customer</Text>
+                <View style={styles.detailValueContainer}>
+                  <View style={styles.separator} />
+                  <Text style={styles.detailValue}>Chidi Samuel</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Other Details</Text>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Date</Text>
+                <View style={styles.detailValueContainer}>
+                  <CalendarIcon />
+                  <View style={styles.separator} />
+                  <Text style={styles.detailValue}>7th, June 2024</Text>
+                </View>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Time</Text>
+                <View style={styles.detailValueContainer}>
+                  <ClockIcon />
+                  <View style={styles.separator} />
+                  <Text style={styles.detailValue}>6:42pm</Text>
+                </View>
+              </View>
+            </View>
           </View>
         </View>
       </Modal>
@@ -398,7 +338,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 10,
     margin: 10,
-    gap:4
+    gap: 4
   },
   modalHeader: {
     flexDirection: 'row',
@@ -464,9 +404,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border.default,
   },
   activityIcon: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
+    margin:10
   },
   activityTitle: {
     ...typography.body1,
