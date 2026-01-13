@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
 import {
@@ -18,41 +18,9 @@ import {
   ArrowUpRightIcon,
 } from '../assets/icons';
 import WalletCard from '../components/WalletCard';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 
-const TRANSACTIONS = [
-  {
-    id: '1',
-    type: 'debit',
-    description: 'Debit',
-    customer: 'Ayodele John',
-    points: 2200,
-    amount: 120,
-  },
-  {
-    id: '2',
-    type: 'topup',
-    description: 'Top Up',
-    customer: '5455....7799',
-    amount: 4000,
-  },{
-    id: '3',
-    type: 'debit',
-    description: 'Debit',
-    customer: 'Ayodele John',
-    points: 2200,
-    amount: 120,
-  },
-  {
-    id: '4',
-    type: 'debit',
-    description: 'Debit',
-    customer: 'Ayodele John',
-    points: 2200,
-    amount: 120,
-  },
-];
 
 type WalletScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'BottomTab'>;
 
@@ -62,6 +30,50 @@ interface WalletScreenProps {
 
 const WalletScreen = ({ navigation }: WalletScreenProps) => {
 
+  const [transactions, setTransactions] = useState([]);
+
+  const fetchTransactions = async () => {
+    setTransactions([{
+      id: 1, date: '10/11/2025', transactions: [
+        {
+          id: '1',
+          type: 'debit',
+          description: 'Debit',
+          cardNumber: 'Ayodele John',
+          points: 2200,
+          amount: 120,
+        },
+        {
+          id: '2',
+          type: 'reversal',
+          description: 'Top Up',
+          cardNumber: '5455....7799',
+          amount: 4000,
+        }, {
+          id: '3',
+          type: 'debit',
+          description: 'Debit',
+          customer: 'Ayodele John',
+          points: 2200,
+          amount: 120,
+        },
+        {
+          id: '4',
+          type: 'debit',
+          description: 'Debit',
+          cardNumber: '5455....7799',
+          points: 2200,
+          amount: 120,
+        }]
+      }
+    ]);
+    setTransactions(transactions);
+  }
+  
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+  
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -82,36 +94,38 @@ const WalletScreen = ({ navigation }: WalletScreenProps) => {
           </TouchableOpacity>
         </View>
       </View>
-
       {/* Transactions */}
       <ScrollView >
         <View style={styles.listContainer}>
-          <View style={styles.dateTag}>
-            <Text style={styles.dateTagText}>Today</Text>
-          </View>
-          {TRANSACTIONS.map((transaction) => (
-            <View key={transaction.id} style={styles.transactionItem}>
-              <View style={styles.transactionLeft}>
-                <View style={[styles.iconContainer, transaction.type === 'debit' ? styles.debitIconBg : styles.topupIconBg]}>
-                  {transaction.type === 'debit' ? <ArrowUpRightIcon color="#FC4C5D" /> : <ArrowDownLeftIcon color="#2FB763" />}
-                </View>
-                <View>
-                  <Text style={styles.transactionType}>{transaction.description}</Text>
-                  <Text style={styles.transactionCustomer}>{transaction.customer}</Text>
-                </View>
+
+          {transactions.map((transaction) => (
+            <>
+              <View style={styles.dateTag}>
+                <Text style={styles.dateTagText}>{transaction.date}</Text>
               </View>
-              <View style={styles.transactionRight}>
-                {transaction.points && <Text style={styles.transactionPoints}>{transaction.points} Pts</Text>}
-                <View style={styles.amountContainer}>
-                  <Text style={styles.transactionAmount}>${transaction.amount}</Text>
+              {transaction.transactions.map((transaction) => (
+                <View key={transaction.id} style={styles.transactionItem}>
+                  <View style={styles.transactionLeft}>
+                    <View style={[styles.iconContainer, transaction.type === 'debit' ? styles.debitIconBg : styles.topupIconBg]}>
+                      {transaction.type === 'debit' ? <ArrowUpRightIcon color="#FC4C5D" /> : <ArrowDownLeftIcon color="#2FB763" />}
+                    </View>
+                    <View>
+                      <Text style={styles.transactionType}>{transaction.description}</Text>
+                      <Text style={styles.transactionCustomer}>{transaction.cardNumber}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.transactionRight}>
+                    {transaction.points && <Text style={styles.transactionPoints}>{transaction.points} Pts</Text>}
+                    <View style={styles.amountContainer}>
+                      <Text style={styles.transactionAmount}>${transaction.amount}</Text>
+                    </View>
+                  </View>
                 </View>
-              </View>
-            </View>
+              ))}
+            </>
           ))}
         </View>
       </ScrollView>
-
-   
     </SafeAreaView>
   );
 };

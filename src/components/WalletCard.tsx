@@ -2,10 +2,12 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import colors from '../theme/colors';
+import { useAppContext } from '../context/AppContext';
 
 const visaLogo = require('../assets/images/visa-logo.png');
 
 const WalletCard = () => {
+  const { user } = useAppContext();
   return (
     <View style={styles.cardContainer}>
       <LinearGradient
@@ -22,8 +24,8 @@ const WalletCard = () => {
         >
           <View style={styles.cardFooter}>
             <View>
-              <Text style={styles.restaurantName}>Mon Lapin Restaurant</Text>
-              <Text style={styles.cardType}>Dollar Debit Card</Text>
+              <Text style={styles.restaurantName}>{user?.restaurant_name}</Text>
+              <Text style={styles.cardType}>Debit Card</Text>
             </View>
             <Image source={visaLogo} style={styles.visaLogo} />
           </View>
