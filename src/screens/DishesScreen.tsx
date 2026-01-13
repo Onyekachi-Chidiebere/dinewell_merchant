@@ -23,7 +23,7 @@ import { useDishContext } from '../context/DishContext';
 const DishesScreen = () => {
   const { openDishSheet } = useBottomSheet();
 
-  const [visible, setVisible] = useState(false);
+  const [dishDetails, setDishDetails] = useState(null);
 
   const { dishes, fetchDishes } = useDishContext();
 
@@ -99,7 +99,7 @@ const DishesScreen = () => {
                     </View>
 
                   </View>
-                  <Pressable onPress={() => setVisible(true)} style={styles.viewButton}>
+                  <Pressable onPress={() => setDishDetails(dish)} style={styles.viewButton}>
                     <Text style={styles.viewButtonText}>View</Text>
                   </Pressable>
                 </View>
@@ -109,15 +109,15 @@ const DishesScreen = () => {
         ))}
       </ScrollView>
       <Modal
-        visible={visible}
+        visible={dishDetails !== null}
         transparent
         animationType="fade"
-        onRequestClose={() => setVisible(false)}
+        onRequestClose={() => setDishDetails(null)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Pressable style={styles.closeButtonContainer} onPress={() => setVisible(false)}>
+              <Pressable style={styles.closeButtonContainer} onPress={() => setDishDetails(null)}>
                 <View style={styles.closeButton}>
                   <Text style={styles.closeButtonText}>×</Text>
                 </View>
@@ -125,44 +125,18 @@ const DishesScreen = () => {
             </View>
             <View style={styles.modalView}>
               <View style={styles.dishHeader}>
-                <Image source={require('../assets/images/logo1.png')} style={styles.dishLogo} />
-                <Text style={styles.dishTitle}>Scuderia Pasta</Text>
+                <Image source={{ uri: dishDetails?.dish_image_url }} style={styles.dishLogo} />
+                <Text style={styles.dishTitle}>{dishDetails?.dish_name}</Text>
               </View>
 
               <View style={styles.dishInfoSection}>
                 <View style={styles.dishInfoItem}>
                   <Text style={styles.dishInfoLabel}>Price Per Dish</Text>
-                  <Text style={styles.dishInfoValue}>$12</Text>
-                </View>
-                <View style={styles.dishInfoItem}>
-                  <Text style={styles.dishInfoLabel}>Points Per Dollar</Text>
-                  <Text style={styles.dishInfoValue}>4pts</Text>
+                  <Text style={styles.dishInfoValue}>${dishDetails?.price}</Text>
                 </View>
               </View>
 
-              <View style={styles.statsSection}>
-                <View style={styles.statRow}>
-                  <View style={styles.statBackground}>
-                    <GreyBackground />
-                  </View>
-                  <Text style={styles.statLabelModal}>BASE POINTS PER DISH</Text>
-                  <Text style={styles.statValue}>48</Text>
-                </View>
-                <View style={styles.statRow}>
-                  <View style={styles.statBackground}>
-                    <GreyBackground />
-                  </View>
-                  <Text style={styles.statLabelModal}>POINTS ISSUED</Text>
-                  <Text style={styles.statValue}>2,257</Text>
-                </View>
-                <View style={styles.statRow}>
-                  <View style={styles.statBackground}>
-                    <GreyBackground />
-                  </View>
-                  <Text style={styles.statLabelModal}>DISH RANK</Text>
-                  <Text style={styles.statValue}>2</Text>
-                </View>
-              </View>
+              
 
               <View style={styles.statusSection}>
                 <Text style={styles.dishInfoLabel}>Status</Text>
