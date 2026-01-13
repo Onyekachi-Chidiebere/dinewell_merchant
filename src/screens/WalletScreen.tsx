@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
 import colors from '../theme/colors';
 import typography from '../theme/typography';
@@ -19,6 +20,9 @@ import {
 } from '../assets/icons';
 import WalletCard from '../components/WalletCard';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import axios from '../api/axios';
+import { useAppContext } from '../context/AppContext';
+import Toast from 'react-native-toast-message';
 
 
 
@@ -28,51 +32,56 @@ interface WalletScreenProps {
   navigation: WalletScreenNavigationProp;
 }
 
-const WalletScreen = ({ navigation }: WalletScreenProps) => {
+interface Transaction {
+  id: string;
+  type: 'debit' | 'reversal';
+  description: string;
+  cardNumber?: string;
+  customer?: string;
+  points?: number;
+  amount: number;
+}
 
-  const [transactions, setTransactions] = useState([]);
+interface TransactionGroup {
+  id: string;
+  date: string;
+  transactions: Transaction[];
+}
+
+const WalletScreen = ({ navigation }: WalletScreenProps) => {
+  const { user } = useAppContext();
+  const [transactions, setTransactions] = useState<TransactionGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchTransactions = async () => {
-    setTransactions([{
-      id: 1, date: '10/11/2025', transactions: [
-        {
-          id: '1',
-          type: 'debit',
-          description: 'Debit',
-          cardNumber: 'Ayodele John',
-          points: 2200,
-          amount: 120,
-        },
-        {
-          id: '2',
-          type: 'reversal',
-          description: 'Top Up',
-          cardNumber: '5455....7799',
-          amount: 4000,
-        }, {
-          id: '3',
-          type: 'debit',
-          description: 'Debit',
-          customer: 'Ayodele John',
-          points: 2200,
-          amount: 120,
-        },
-        {
-          id: '4',
-          type: 'debit',
-          description: 'Debit',
-          cardNumber: '5455....7799',
-          points: 2200,
-          amount: 120,
-        }]
-      }
-    ]);
-    setTransactions(transactions);
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get(`/restaurants/${user.id}/payments/history`);
+      setTransactions(response.data || []);
+    } catch (err: any) {
+      console.error('Error fetching payment history:', err);
+      setError(err.response?.data?.error || 'Failed to fetch transactions');
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: err.response?.data?.error || 'Failed to fetch transactions'
+      });
+      setTransactions([]);
+    } finally {
+      setLoading(false);
+    }
   }
   
   useEffect(() => {
     fetchTransactions();
-  }, []);
+  }, [user?.id]);
   
   return (
     <SafeAreaView style={styles.container}>
@@ -97,33 +106,50 @@ const WalletScreen = ({ navigation }: WalletScreenProps) => {
       {/* Transactions */}
       <ScrollView >
         <View style={styles.listContainer}>
-
-          {transactions.map((transaction) => (
-            <>
-              <View style={styles.dateTag}>
-                <Text style={styles.dateTagText}>{transaction.date}</Text>
-              </View>
-              {transaction.transactions.map((transaction) => (
-                <View key={transaction.id} style={styles.transactionItem}>
-                  <View style={styles.transactionLeft}>
-                    <View style={[styles.iconContainer, transaction.type === 'debit' ? styles.debitIconBg : styles.topupIconBg]}>
-                      {transaction.type === 'debit' ? <ArrowUpRightIcon color="#FC4C5D" /> : <ArrowDownLeftIcon color="#2FB763" />}
-                    </View>
-                    <View>
-                      <Text style={styles.transactionType}>{transaction.description}</Text>
-                      <Text style={styles.transactionCustomer}>{transaction.cardNumber}</Text>
-                    </View>
-                  </View>
-                  <View style={styles.transactionRight}>
-                    {transaction.points && <Text style={styles.transactionPoints}>{transaction.points} Pts</Text>}
-                    <View style={styles.amountContainer}>
-                      <Text style={styles.transactionAmount}>${transaction.amount}</Text>
-                    </View>
-                  </View>
+          {loading ? (
+            <View style={styles.centerContainer}>
+              <ActivityIndicator size="large" color={colors.primary.main} />
+              <Text style={styles.loadingText}>Loading transactions...</Text>
+            </View>
+          ) : error ? (
+            <View style={styles.centerContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity style={styles.retryButton} onPress={fetchTransactions}>
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : transactions.length === 0 ? (
+            <View style={styles.centerContainer}>
+              <Text style={styles.emptyText}>No payment transactions found</Text>
+            </View>
+          ) : (
+            transactions.map((transactionGroup) => (
+              <React.Fragment key={transactionGroup.id}>
+                <View style={styles.dateTag}>
+                  <Text style={styles.dateTagText}>{transactionGroup.date}</Text>
                 </View>
-              ))}
-            </>
-          ))}
+                {transactionGroup.transactions.map((transaction) => (
+                  <View key={transaction.id} style={styles.transactionItem}>
+                    <View style={styles.transactionLeft}>
+                      <View style={[styles.iconContainer, transaction.type === 'debit' ? styles.debitIconBg : styles.topupIconBg]}>
+                        {transaction.type === 'debit' ? <ArrowUpRightIcon color="#FC4C5D" /> : <ArrowDownLeftIcon color="#2FB763" />}
+                      </View>
+                      <View>
+                        <Text style={styles.transactionType}>{transaction.description}</Text>
+                        <Text style={styles.transactionCustomer}>{transaction.cardNumber || transaction.customer || 'N/A'}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.transactionRight}>
+                      {transaction.points && <Text style={styles.transactionPoints}>{transaction.points} Pts</Text>}
+                      <View style={styles.amountContainer}>
+                        <Text style={styles.transactionAmount}>${transaction.amount.toFixed(2)}</Text>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </React.Fragment>
+            ))
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -264,6 +290,41 @@ const styles = StyleSheet.create({
   cardActionText: {
     ...typography.body2,
     color: colors.text.secondary,
+    fontWeight: '600',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  loadingText: {
+    ...typography.body2,
+    color: colors.text.secondary,
+    marginTop: 12,
+  },
+  errorText: {
+    ...typography.body1,
+    color: colors.status.error,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  emptyText: {
+    ...typography.body1,
+    color: colors.text.secondary,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: colors.primary.main,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 24,
+    marginTop: 16,
+  },
+  retryButtonText: {
+    ...typography.body1,
+    color: colors.text.white,
     fontWeight: '600',
   },
 });
