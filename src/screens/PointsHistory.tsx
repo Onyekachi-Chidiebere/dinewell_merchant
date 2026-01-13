@@ -3,11 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   SafeAreaView,
   TextInput,
-  Image,
   Pressable,
   Modal,
   FlatList,
@@ -46,7 +44,6 @@ interface TransactionGroup {
 const PointHistoryScreen = () => {
   const { user } = useAppContext();
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [showBundle, setShowBundle] = useState(false);
   const [showActivity, setShowActivity] = useState(false);
   const [transactions, setTransactions] = useState<TransactionGroup[]>([]);
   const [trasactionDetails, setTrasactionDetails] = useState<Transaction | null>(null);
@@ -164,107 +161,16 @@ const PointHistoryScreen = () => {
 
       
       <Modal
-        visible={showBundle}
+        visible={trasactionDetails !== null}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowBundle(false)}
+        onRequestClose={() => setTrasactionDetails(null)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.header}>
-              <Text style={styles.transactionId}>Purchase ID #3443242</Text>
-              <TouchableOpacity style={styles.closeButton} onPress={() => setShowBundle(false)}>
-                <CloseIcon width={24} height={24} color="#fff" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>General Details</Text>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Bundle Price</Text>
-                <View style={styles.detailValueContainer}>
-                  <DollarIcon />
-                  <View style={styles.separator} />
-                  <Text style={styles.detailValue}>100</Text>
-                </View>
-              </View>
-            </View>
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Bundle Details</Text>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Points Received</Text>
-                <View style={styles.detailValueContainer}>
-                  <ArrowSimpleDownIcon />
-                  <View style={styles.separator} />
-                  <Text style={styles.detailValue}>2200</Text>
-                </View>
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Points Issued</Text>
-                <View style={styles.detailValueContainer}>
-                  <ArrowSimpleUpIcon />
-                  <View style={styles.separator} />
-                  <Text style={styles.detailValue}>1100</Text>
-                </View>
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Points Left</Text>
-                <View style={styles.detailValueContainer}>
-                  <CalendarIcon />
-                  <View style={styles.separator} />
-                  <Text style={styles.detailValue}>1100</Text>
-                </View>
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Active Days Left</Text>
-                <View style={styles.detailValueContainer}>
-                  <ClockIcon />
-                  <View style={styles.separator} />
-                  <Text style={styles.detailValue}>32 Days</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Other Details</Text>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Purchase mode</Text>
-                <View style={styles.detailValueContainer}>
-                  <CardIcon />
-                  <View style={styles.separator} />
-                  <Text style={styles.detailValue}>Card</Text>
-                </View>
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Date</Text>
-                <View style={styles.detailValueContainer}>
-                  <CalendarIcon />
-                  <View style={styles.separator} />
-                  <Text style={styles.detailValue}>7th, June 2024</Text>
-                </View>
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Time</Text>
-                <View style={styles.detailValueContainer}>
-                  <ClockIcon />
-                  <View style={styles.separator} />
-                  <Text style={styles.detailValue}>6:42pm</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
-      <Modal
-        visible={showActivity}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowActivity(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.header}>
-              <Text style={styles.transactionId}>Transaction ID #3443242</Text>
-              <TouchableOpacity style={styles.closeButton} onPress={() => setShowActivity(false)}>
+              <Text style={styles.transactionId}>Transaction ID #{trasactionDetails?.id}</Text>
+              <TouchableOpacity style={styles.closeButton} onPress={() => setTrasactionDetails(null)}>
                 <CloseIcon width={24} height={24} color="#fff" />
               </TouchableOpacity>
             </View>
@@ -273,23 +179,23 @@ const PointHistoryScreen = () => {
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Type Price</Text>
                 <View style={styles.detailValueContainer}>
-                  <ArrowSimpleDownIcon />
+                  {trasactionDetails?.type === 'redeemed' ? <ArrowSimpleDownIcon /> : <ArrowSimpleUpIcon />}
                   <View style={styles.separator} />
-                  <Text style={styles.detailValue}>Point Redeemed</Text>
+                  <Text style={styles.detailValue}>Point {trasactionDetails?.type === 'redeemed' ? 'Redeemed' : 'Issued'}</Text>
                 </View>
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Points</Text>
                 <View style={styles.detailValueContainer}>
                   <View style={styles.separator} />
-                  <Text style={styles.detailValue}>50</Text>
+                  <Text style={styles.detailValue}>{trasactionDetails?.points}</Text>
                 </View>
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Customer</Text>
                 <View style={styles.detailValueContainer}>
                   <View style={styles.separator} />
-                  <Text style={styles.detailValue}>Chidi Samuel</Text>
+                  <Text style={styles.detailValue}>{trasactionDetails?.customer}</Text>
                 </View>
               </View>
             </View>
@@ -302,7 +208,7 @@ const PointHistoryScreen = () => {
                 <View style={styles.detailValueContainer}>
                   <CalendarIcon />
                   <View style={styles.separator} />
-                  <Text style={styles.detailValue}>7th, June 2024</Text>
+                  <Text style={styles.detailValue}>{new Date(trasactionDetails?.date).toLocaleDateString("en-GB", { day: '2-digit', month: 'long', year: 'numeric' })}</Text>
                 </View>
               </View>
               <View style={styles.detailRow}>
@@ -310,7 +216,7 @@ const PointHistoryScreen = () => {
                 <View style={styles.detailValueContainer}>
                   <ClockIcon />
                   <View style={styles.separator} />
-                  <Text style={styles.detailValue}>6:42pm</Text>
+                  <Text style={styles.detailValue}>{new Date(trasactionDetails?.date).toLocaleTimeString("en-GB", { hour: '2-digit', minute: '2-digit', hour12: true })}</Text>
                 </View>
               </View>
             </View>
@@ -656,6 +562,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background.paper,
+
   },
   header: {
     flexDirection: 'row',
