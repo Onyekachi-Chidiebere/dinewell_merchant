@@ -135,9 +135,6 @@ const DishesScreen = () => {
                   <Text style={styles.dishInfoValue}>${dishDetails?.price}</Text>
                 </View>
               </View>
-
-              
-
               <View style={styles.statusSection}>
                 <Text style={styles.dishInfoLabel}>Status</Text>
                 <Text style={styles.statusValue}>Active</Text>
