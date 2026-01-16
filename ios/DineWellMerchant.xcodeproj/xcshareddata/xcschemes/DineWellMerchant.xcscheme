@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "merchant.app"
-               BlueprintName = "merchant"
-               ReferencedContainer = "container:merchant.xcodeproj">
+               BuildableName = "DineWellMerchant.app"
+               BlueprintName = "DineWellMerchant"
+               ReferencedContainer = "container:DineWellMerchant.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "merchantTests.xctest"
-               BlueprintName = "merchantTests"
-               ReferencedContainer = "container:merchant.xcodeproj">
+               BuildableName = "DineWellMerchantTests.xctest"
+               BlueprintName = "DineWellMerchantTests"
+               ReferencedContainer = "container:DineWellMerchant.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "merchant.app"
-            BlueprintName = "merchant"
-            ReferencedContainer = "container:merchant.xcodeproj">
+            BuildableName = "DineWellMerchant.app"
+            BlueprintName = "DineWellMerchant"
+            ReferencedContainer = "container:DineWellMerchant.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "merchant.app"
-            BlueprintName = "merchant"
-            ReferencedContainer = "container:merchant.xcodeproj">
+            BuildableName = "DineWellMerchant.app"
+            BlueprintName = "DineWellMerchant"
+            ReferencedContainer = "container:DineWellMerchant.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
