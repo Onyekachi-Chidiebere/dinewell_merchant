@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,20 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  TextInput,
+  Modal,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { launchImageLibrary, ImagePickerResponse, MediaType } from 'react-native-image-picker';
 import colors from '../theme/colors';
 import typography from '../theme/typography';
 import { ArrowLeftIcon, CalendarIcon, ChevronDownIcon } from '../assets/icons';
+import { useAppContext } from '../context/AppContext';
+import useMerchant from '../customHooks/useMerchant';
+import Toast from 'react-native-toast-message';
 
 type RootStackParamList = {
   Profile: undefined;
@@ -20,11 +28,143 @@ type RootStackParamList = {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+const formatDateForDisplay = (dateString: string): string => {
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${month}/${day}`;
+  } catch {
+    return '';
+  }
+};
+
+const formatDateForAPI = (dateString: string, originalDate?: string): string => {
+  if (!dateString) return '';
+  // Assuming format is MM/DD, convert to YYYY-MM-DD
+  const [month, day] = dateString.split('/');
+  if (!month || !day) return '';
+  
+  // Try to preserve the original year if available
+  let year = new Date().getFullYear();
+  if (originalDate) {
+    try {
+      const original = new Date(originalDate);
+      if (!isNaN(original.getTime())) {
+        year = original.getFullYear();
+      }
+    } catch {
+      // Use current year if parsing fails
+    }
+  }
+  
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+};
+
 const ProfileDetailsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { user, updateUser } = useAppContext();
+  const { updateProfile, loading } = useMerchant();
 
-  const handleBack = () => {
-    navigation.goBack();
+  const [restaurantName, setRestaurantName] = useState(user?.restaurant_name || '');
+  const [name, setName] = useState(user?.name || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [dateOfBirth, setDateOfBirth] = useState(user?.date_of_birth ? formatDateForDisplay(user.date_of_birth) : '');
+  const [gender, setGender] = useState(user?.gender || '');
+  const [profileImage, setProfileImage] = useState(user?.restaurant_logo || user?.profile_image || '');
+  const [selectedImage, setSelectedImage] = useState<any>(null);
+  const [showGenderModal, setShowGenderModal] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say'];
+
+  useEffect(() => {
+    if (user) {
+      setRestaurantName(user.restaurant_name || '');
+      setName(user.name || '');
+      setPhone(user.phone || '');
+      setDateOfBirth(user.date_of_birth ? formatDateForDisplay(user.date_of_birth) : '');
+      setGender(user.gender || '');
+      setProfileImage(user.restaurant_logo || user.profile_image || '');
+    }
+  }, [user]);
+
+  const handleUpdateProfile = async () => {
+    if (!user?.id) return;
+
+    try {
+      setIsUpdating(true);
+      
+      // Check if there are any changes
+      const hasRestaurantNameChange = restaurantName && restaurantName !== user.restaurant_name;
+      const hasNameChange = name && name !== user.name;
+      const hasPhoneChange = phone && phone !== user.phone;
+      const hasDateChange = dateOfBirth && dateOfBirth !== formatDateForDisplay(user.date_of_birth || '');
+      const hasGenderChange = gender && gender !== user.gender;
+      const hasImageChange = selectedImage || (profileImage && profileImage !== (user.restaurant_logo || user.profile_image));
+
+      if (!hasRestaurantNameChange && !hasNameChange && !hasPhoneChange && !hasDateChange && !hasGenderChange && !hasImageChange) {
+        Toast.show({
+          type: 'info',
+          text1: 'No changes',
+          text2: 'No changes to update',
+        });
+        setIsUpdating(false);
+        return;
+      }
+
+      // If there's an image, use FormData, otherwise use JSON
+      const response = await updateProfile(user.id, {
+        restaurantName: hasRestaurantNameChange ? restaurantName : undefined,
+        name: hasNameChange ? name : undefined,
+        phone: hasPhoneChange ? phone : undefined,
+        dateOfBirth: hasDateChange ? formatDateForAPI(dateOfBirth, user.date_of_birth) : undefined,
+        gender: hasGenderChange ? gender : undefined,
+      }, selectedImage);
+      
+      if (response?.success && response?.merchant) {
+        // Update user in context
+        updateUser(response.merchant);
+        setSelectedImage(null);
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: 'Profile updated successfully',
+        });
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error('Update profile error:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleChangeProfileImage = () => {
+    const options = {
+      mediaType: 'photo' as MediaType,
+      quality: 0.8 as const,
+      maxWidth: 1024,
+      maxHeight: 1024,
+    };
+
+    launchImageLibrary(options, (response: ImagePickerResponse) => {
+      if (response.didCancel) {
+        return;
+      } else if (response.errorMessage) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: response.errorMessage,
+        });
+      } else if (response.assets && response.assets[0]) {
+        const asset = response.assets[0];
+        setSelectedImage(asset);
+        setProfileImage(asset.uri || '');
+      }
+    });
   };
 
   return (
@@ -49,50 +189,138 @@ const ProfileDetailsScreen = () => {
           <View style={styles.profilePictureContainer}>
             <View style={styles.avatarContainer}>
               <Image
-                source={require('../assets/images/avatar.png')}
+                source={
+                  selectedImage?.uri || profileImage
+                    ? { uri: selectedImage?.uri || profileImage }
+                    : require('../assets/images/avatar.png')
+                }
                 style={styles.avatar}
               />
             </View>
-            <TouchableOpacity style={styles.changeButton}>
+            <TouchableOpacity 
+              style={styles.changeButton}
+              onPress={handleChangeProfileImage}
+            >
               <Text style={styles.changeButtonText}>Change</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Username</Text>
+          <Text style={styles.sectionTitle}>Restaurant Name</Text>
           <View style={styles.inputField}>
-            <Text style={styles.inputText}>senSÉ</Text>
+            <TextInput
+              style={styles.textInput}
+              value={restaurantName}
+              onChangeText={setRestaurantName}
+              placeholder="Enter restaurant name"
+              placeholderTextColor={colors.text.tertiary}
+            />
           </View>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Profile Details</Text>
           <View style={styles.inputField}>
-            <Text style={styles.inputText}>John Okor</Text>
+            <TextInput
+              style={styles.textInput}
+              value={name}
+              onChangeText={setName}
+              placeholder="Enter your name"
+              placeholderTextColor={colors.text.tertiary}
+            />
+          </View>
+          <View style={[styles.inputField, styles.readOnlyField]}>
+            <Text style={styles.inputText}>{user?.email || ''}</Text>
           </View>
           <View style={styles.inputField}>
-            <Text style={styles.inputText}>ideastoimpact.sense@gmail.com</Text>
+            <TextInput
+              style={styles.textInput}
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="Enter phone number"
+              placeholderTextColor={colors.text.tertiary}
+              keyboardType="phone-pad"
+            />
           </View>
           <View style={styles.inputField}>
-            <Text style={styles.inputText}>02/06</Text>
+            <TextInput
+              style={styles.textInput}
+              value={dateOfBirth}
+              onChangeText={setDateOfBirth}
+              placeholder="MM/DD"
+              placeholderTextColor={colors.text.tertiary}
+            />
             <View style={styles.inputIcon}>
               <CalendarIcon width={24} height={24} color={colors.text.tertiary} />
             </View>
           </View>
-          <View style={styles.inputField}>
-            <Text style={styles.inputText}>Male</Text>
+          <TouchableOpacity 
+            style={styles.inputField}
+            onPress={() => setShowGenderModal(true)}
+          >
+            <Text style={[styles.inputText, !gender && { color: colors.text.tertiary }]}>
+              {gender || 'Select gender'}
+            </Text>
             <View style={styles.inputIcon}>
               <ChevronDownIcon width={24} height={24} color={colors.text.tertiary} />
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.buttonSection}>
-          <TouchableOpacity style={styles.updateButton}>
-            <Text style={styles.updateButtonText}>Update profile</Text>
+          <TouchableOpacity 
+            style={[styles.updateButton, (isUpdating || loading) && styles.updateButtonDisabled]}
+            onPress={handleUpdateProfile}
+            disabled={isUpdating || loading}
+          >
+            {isUpdating || loading ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Text style={styles.updateButtonText}>Update profile</Text>
+            )}
           </TouchableOpacity>
         </View>
+
+        {/* Gender Selection Modal */}
+        <Modal
+          visible={showGenderModal}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowGenderModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Gender</Text>
+              {genderOptions.map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={[
+                    styles.modalOption,
+                    gender === option && styles.modalOptionSelected
+                  ]}
+                  onPress={() => {
+                    setGender(option);
+                    setShowGenderModal(false);
+                  }}
+                >
+                  <Text style={[
+                    styles.modalOptionText,
+                    gender === option && styles.modalOptionTextSelected
+                  ]}>
+                    {option}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setShowGenderModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </View>
   );
@@ -202,12 +430,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#EFDCDA',
     height: 48,
+    marginBottom: 8,
   },
   inputText: {
     ...typography.subtitle2,
     color: colors.text.primary,
     fontFamily: 'Mulish-SemiBold',
     letterSpacing: -0.4,
+    flex: 1,
+  },
+  textInput: {
+    ...typography.subtitle2,
+    color: colors.text.primary,
+    fontFamily: 'Mulish-SemiBold',
+    letterSpacing: -0.4,
+    flex: 1,
+    padding: 0,
+  },
+  readOnlyField: {
+    opacity: 0.6,
   },
   inputIcon: {
     width: 44,
@@ -251,6 +492,56 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
   },
+  updateButtonDisabled: {
+    opacity: 0.6,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.background.paper,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+  },
+  modalTitle: {
+    ...typography.subtitle1,
+    color: colors.text.primary,
+    fontFamily: 'RedHatDisplay-Bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalOption: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: colors.background.subtle,
+  },
+  modalOptionSelected: {
+    backgroundColor: colors.primary.main,
+  },
+  modalOptionText: {
+    ...typography.subtitle2,
+    color: colors.text.primary,
+    fontFamily: 'Mulish-SemiBold',
+  },
+  modalOptionTextSelected: {
+    color: '#FFFFFF',
+  },
+  modalCancelButton: {
+    marginTop: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    ...typography.subtitle2,
+    color: colors.text.secondary,
+    fontFamily: 'Mulish-SemiBold',
+  },
 });
 
-export default ProfileDetailsScreen; 
+export default ProfileDetailsScreen;

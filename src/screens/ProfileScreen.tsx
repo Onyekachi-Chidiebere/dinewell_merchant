@@ -6,12 +6,14 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import colors from '../theme/colors';
 import typography from '../theme/typography';
 import { ArrowRightIcon, SecurityIcon, SettingsIcon, NotificationFadeIcon } from '../assets/icons';
+import { useAppContext } from '../context/AppContext';
 
 type RootStackParamList = {
   AccountSettings: undefined;
@@ -25,6 +27,27 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const ProfileScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { user, logout } = useAppContext();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Log Out',
+      'Are you sure you want to log out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Log Out',
+          style: 'destructive',
+          onPress: () => {
+            logout();
+          },
+        },
+      ]
+    );
+  };
 
   const menuItems = [
     {
@@ -92,19 +115,26 @@ const ProfileScreen = () => {
           <View style={styles.profileInfo}>
             <View style={styles.avatarContainer}>
               <Image
-                source={require('../assets/images/avatar.png')}
+                source={
+                  user?.restaurant_logo || user?.profile_image
+                    ? { uri: user.restaurant_logo || user.profile_image }
+                    : require('../assets/images/avatar.png')
+                }
                 style={styles.avatar}
               />
             </View>
             <View style={styles.nameContainer}>
-              <Text style={styles.name}>Mon Lapin Restaurant</Text>
+              <Text style={styles.name}>{user?.restaurant_name || user?.name || 'Restaurant'}</Text>
               <View style={styles.usernameContainer}>
                 <Text style={styles.usernameLabel}>ID</Text>
-                <Text style={styles.username}>1122334455</Text>
+                <Text style={styles.username}>{user?.id || ''}</Text>
               </View>
             </View>
           </View>
-          <TouchableOpacity style={styles.editButton}>
+          <TouchableOpacity 
+            style={styles.editButton}
+            onPress={() => navigation.navigate('ProfileDetails' as never)}
+          >
             <ArrowRightIcon width={24} height={24} color={colors.border.subtle} />
           </TouchableOpacity>
         </View>
@@ -127,7 +157,7 @@ const ProfileScreen = () => {
             {menuItems.slice(3).map(renderMenuItem)}
           </View>
           <View style={styles.divider} />
-          <TouchableOpacity style={styles.logoutButton}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutText}>Log Out</Text>
           </TouchableOpacity>
         </View>
@@ -177,6 +207,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: '100%',
     height: '100%',
+    resizeMode: 'cover',
   },
   nameContainer: {
     gap: 4,
