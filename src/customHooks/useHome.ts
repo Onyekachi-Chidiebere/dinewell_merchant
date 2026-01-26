@@ -26,7 +26,6 @@ export const useHome = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.log({statistics})
   const fetchStatistics = async () => {
     if (!user?.id) return;
     

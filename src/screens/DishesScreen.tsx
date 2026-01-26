@@ -9,7 +9,8 @@ import {
   SafeAreaView,
   StatusBar,
   Pressable,
-  Modal
+  Modal,
+  TextInput
 } from 'react-native';
 import colors from '../theme/colors';
 import { SearchIcon, NotificationIcon, StarIcon } from '../assets/icons/index';
@@ -25,11 +26,11 @@ const DishesScreen = () => {
 
   const [dishDetails, setDishDetails] = useState(null);
 
-  const { dishes, fetchDishes } = useDishContext();
+  const { dishes, fetchDishes,activeDishes, searchQuery, setSearchQuery} = useDishContext();
 
   React.useEffect(() => {
     fetchDishes();
-  }, []);
+  }, [searchQuery]);
 
   const openCreateDish = () => openDishSheet({ });
 
@@ -39,22 +40,19 @@ const DishesScreen = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.userInfo}>
-          <Image
-            source={require('../assets/images/avatar.png')}
-            style={styles.avatar}
+        <View style={styles.searchContainer}>
+          <SearchIcon width={20} height={20} color={colors.text.tertiary} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search here"
+            placeholderTextColor={colors.text.tertiary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
-          <View>
-            <Text style={styles.greeting}>Hi!</Text>
-            <Text style={styles.userName}>John Ayodele</Text>
-          </View>
         </View>
         <View style={styles.headerIcons}>
           <TouchableOpacity style={styles.iconButton}>
-            <SearchIcon width={16} height={16} color={colors.primary.main} />
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.iconButton, styles.notificationButton]}>
-            <NotificationIcon width={20} height={20} color={colors.primary.main} />
+            <NotificationIcon width={24} height={24} color={colors.primary.main} />
           </TouchableOpacity>
         </View>
       </View>
@@ -64,7 +62,7 @@ const DishesScreen = () => {
             <GreyBackground />
           </View>
           <Text style={styles.filterRowText}>ACTIVE DISHES</Text>
-          <Text style={styles.filterRowCount}>12</Text>
+          <Text style={styles.filterRowCount}>{activeDishes}</Text>
         </View>
         <Pressable onPress={openCreateDish} style={styles.filterButton}><AddIcon /></Pressable>
       </View>
@@ -157,6 +155,22 @@ const DishesScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  searchContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background.default,
+    borderRadius: 24,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    ...typography.caption,
+    color: colors.text.tertiary,
+    padding: 0,
+  },
   modalView: {
     padding: 16,
   },

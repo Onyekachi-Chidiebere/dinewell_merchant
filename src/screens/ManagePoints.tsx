@@ -258,7 +258,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
             >
-            <BackButton />
+            <BackButton style={styles.backBtn} />
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContainer}
@@ -613,6 +613,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.background.default,
         minHeight: 812,
+    },
+    backBtn:{
+        marginHorizontal:20,
     },
     scrollContainer: {
         paddingBottom: 200, // Extra padding to ensure content is scrollable above keyboard

@@ -17,7 +17,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   const loadUserFromStorage = async () => {
     try {
-      const storedUser = await AsyncStorage.getItem('merchant_user');
+      const storedUser = await AsyncStorage.getItem('dinewell_merchant_user');
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
@@ -28,7 +28,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   const saveUserToStorage = async (userData: any) => {
     try {
-      await AsyncStorage.setItem('merchant_user', JSON.stringify(userData));
+      await AsyncStorage.setItem('dinewell_merchant_user', JSON.stringify(userData));
     } catch (err) {
       console.error('Failed to save user to storage:', err);
     }
@@ -36,7 +36,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   const removeUserFromStorage = async () => {
     try {
-      await AsyncStorage.removeItem('merchant_user');
+      await AsyncStorage.removeItem('dinewell_merchant_user');
     } catch (err) {
       console.error('Failed to remove user from storage:', err);
     }

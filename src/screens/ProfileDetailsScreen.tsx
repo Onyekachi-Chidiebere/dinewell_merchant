@@ -122,6 +122,7 @@ const ProfileDetailsScreen = () => {
         phone: hasPhoneChange ? phone : undefined,
         dateOfBirth: hasDateChange ? formatDateForAPI(dateOfBirth, user.date_of_birth) : undefined,
         gender: hasGenderChange ? gender : undefined,
+        profileImage: selectedImage || (hasImageChange && !selectedImage ? profileImage : undefined),
       }, selectedImage);
       
       if (response?.success && response?.merchant) {
@@ -221,15 +222,7 @@ const ProfileDetailsScreen = () => {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Profile Details</Text>
-          <View style={styles.inputField}>
-            <TextInput
-              style={styles.textInput}
-              value={name}
-              onChangeText={setName}
-              placeholder="Enter your name"
-              placeholderTextColor={colors.text.tertiary}
-            />
-          </View>
+        
           <View style={[styles.inputField, styles.readOnlyField]}>
             <Text style={styles.inputText}>{user?.email || ''}</Text>
           </View>
@@ -243,29 +236,8 @@ const ProfileDetailsScreen = () => {
               keyboardType="phone-pad"
             />
           </View>
-          <View style={styles.inputField}>
-            <TextInput
-              style={styles.textInput}
-              value={dateOfBirth}
-              onChangeText={setDateOfBirth}
-              placeholder="MM/DD"
-              placeholderTextColor={colors.text.tertiary}
-            />
-            <View style={styles.inputIcon}>
-              <CalendarIcon width={24} height={24} color={colors.text.tertiary} />
-            </View>
-          </View>
-          <TouchableOpacity 
-            style={styles.inputField}
-            onPress={() => setShowGenderModal(true)}
-          >
-            <Text style={[styles.inputText, !gender && { color: colors.text.tertiary }]}>
-              {gender || 'Select gender'}
-            </Text>
-            <View style={styles.inputIcon}>
-              <ChevronDownIcon width={24} height={24} color={colors.text.tertiary} />
-            </View>
-          </TouchableOpacity>
+      
+       
         </View>
 
         <View style={styles.buttonSection}>

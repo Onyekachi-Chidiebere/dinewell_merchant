@@ -56,8 +56,19 @@ const useMerchant = () => {
         if (profileData.dateOfBirth) formData.append('dateOfBirth', profileData.dateOfBirth);
         if (profileData.gender) formData.append('gender', profileData.gender);
         
-        // Let axios set Content-Type automatically with boundary
-        response = await axios.put(`/merchant/profile/${userId}`, formData);
+       
+        response = await axios.put(`/merchant/profile/${userId}`, formData, {
+          headers: { 
+            'Content-Type': 'multipart/form-data',
+          },
+          transformRequest: (data, headers) => {
+            // Don't transform FormData, let React Native handle it
+            if (data instanceof FormData) {
+              return data;
+            }
+            return data;
+          },
+        });
       } else {
         // Regular JSON request
         response = await axios.put(`/merchant/profile/${userId}`, profileData);

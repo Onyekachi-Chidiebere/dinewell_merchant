@@ -17,7 +17,8 @@ const useDish = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [dishes, setDishes] = useState([]);
-
+  const [activeDishes, setActiveDishes] = useState('0')
+  const [searchQuery, setSearchQuery] = useState('')
   const setField = (name, value) => setFields(prev => ({ ...prev, [name]: value }));
 
   // Normalize picker input to a single asset { uri, fileName, type }
@@ -40,9 +41,10 @@ const useDish = () => {
   const fetchDishes = async () => {
     if (!user?.id) return [];
     try {
-      const res = await axios.get(`/restaurants/${user.id}/dishes`);
-      setDishes(res.data || []);
-      return res.data || [];
+      const res = await axios.get(`/restaurants/${user.id}/dishes/${searchQuery}`);
+      setDishes(res.data.dishes || []);
+      setActiveDishes(res.data.activeDishes)
+      return res.data.dishes || [];
     } catch (e) {
       Toast.show({
         type: 'error',
@@ -81,7 +83,7 @@ const useDish = () => {
       });
       return res.data;
     } catch (e) {
-        console.log({e})
+      console.log({ e })
       setLoading(false);
       Toast.show({
         type: 'error',
@@ -92,7 +94,7 @@ const useDish = () => {
     }
   };
 
-  return { fields, dishImage, setField, setImage, reset, createDish, loading, error, dishes, fetchDishes };
+  return { activeDishes, setActiveDishes, fields, dishImage, setField, setImage, reset, createDish, loading, error, dishes, fetchDishes, searchQuery, setSearchQuery };
 };
 
 export default useDish;

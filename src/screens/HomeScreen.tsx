@@ -32,16 +32,16 @@ import { useAppContext } from '../context/AppContext';
 import { useHome } from '../customHooks/useHome';
 
 const mockData: PointsData = {
-  pointsBalance: 1205,
-  pointsEarned: 3924,
-  pointsRedeemed: 2719,
-  pointsToNextTitle: 220,
-  nextTitleName: 'Points Magnet',
+  pointsBalance: 0,
+  pointsEarned: 0,
+  pointsRedeemed: 0,
+  pointsToNextTitle: 0,
+  nextTitleName: '',
 };
 
 const mockWeeklyStats: WeeklyStats = {
-  pointsEarned: 84,
-  restaurantsVisited: 4,
+  pointsEarned: 0,
+  restaurantsVisited: 0,
 };
 
 
@@ -63,44 +63,7 @@ interface PointsSheetData {
   }>;
 }
 
-const mockRestaurantsVisitedData: PointsSheetData = {
-  title: 'Restaurants Visited',
-  icon: Operations,
-  totalPoints: 220,
-  thisWeek: 4,
-  weekData: [
-    {
-      date: '12/05/2025',
-      dayName: 'Friday',
-      transactions: [
-        {
-          id: '1',
-          points: 23,
-          restaurant: 'Mon Lupin Restaurant',
-          order: 1,
-        },
-      ],
-    },
-    {
-      date: '08/05/2025',
-      dayName: 'Monday',
-      transactions: [
-        {
-          id: '2',
-          points: 20,
-          restaurant: 'Mon Lupin Restaurant',
-          order: 1,
-        },
-        {
-          id: '3',
-          points: 41,
-          restaurant: 'Duala Restaurant',
-          order: 2,
-        },
-      ],
-    },
-  ],
-};
+
 
 
 interface RestaurantData {
