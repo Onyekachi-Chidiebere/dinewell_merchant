@@ -377,9 +377,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
                                         value={dishQuantity}
                                         onChangeText={setDishQuantity}
                                     />
-                                    <View style={styles.iconContainer}>
-                                        <ChevronUpDownIcon />
-                                    </View>
+                                   
                                 </View>
 
                                 <Pressable

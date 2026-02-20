@@ -5,8 +5,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors } from '../theme/colors';
 import BackButton from '../components/BackButton';
 import typography from '../theme/typography';
-import LinearGradient from 'react-native-linear-gradient';
-import { PointShareIcon as PointsIcon } from '../assets/icons';
 import QRCode from 'react-native-qrcode-svg';
 import { useAppContext } from '../context/AppContext';
 
@@ -88,11 +86,11 @@ const QrCode = ({ route }: { route: { params: { type: string, qrCode:string } } 
                 </>
                 <>
                     <View style={styles.buttonContainer}>
-                        <Pressable style={[styles.button, styles.newDishButton]}>
+                        <Pressable onPress={() => navigation.goBack()}  style={[styles.button, styles.newDishButton]}>
                             <Text style={styles.newDishButtonText}>Make Changes</Text>
                         </Pressable>
-                        <Pressable onPress={() => navigation.goBack()} style={[styles.button, styles.createQrButton]}>
-                            <Text style={styles.createQrButtonText}>CLose</Text>
+                        <Pressable onPress={() => navigation.reset({index: 0, routes: [{name: 'BottomTab'}]})} style={[styles.button, styles.createQrButton]}>
+                            <Text style={styles.createQrButtonText}>Close</Text>
                         </Pressable>
                     </View></>
             </View>
