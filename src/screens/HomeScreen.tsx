@@ -21,11 +21,8 @@ import typography, { fontFamily } from '../theme/typography';
 import icons from '../theme/icons';
 import Filter from '../assets/icons/filter.svg';
 import Bell from '../assets/icons/notification_bell.svg';
-import Designation from '../assets/icons/designation.svg';
-import Operations from '../assets/icons/operations.svg';
 import Share from '../assets/icons/sharepoints.svg';
 import Refer from '../assets/icons/refer.svg';
-import SpecialOffers from '../assets/icons/special-offers.svg';
 import DashBackground from '../assets/icons/dash-background.svg';
 import GreyBackground from '../assets/icons/grey-background.svg';
 import { useAppContext } from '../context/AppContext';
@@ -43,26 +40,6 @@ const mockWeeklyStats: WeeklyStats = {
   pointsEarned: 0,
   restaurantsVisited: 0,
 };
-
-
-
-interface PointsSheetData {
-  title: string;
-  icon: React.ComponentType<{ width: number; height: number }>;
-  totalPoints: number;
-  thisWeek: number;
-  weekData: Array<{
-    date: string;
-    dayName: string;
-    transactions: Array<{
-      id: string;
-      points: number;
-      restaurant: string;
-      order: number;
-    }>;
-  }>;
-}
-
 
 
 

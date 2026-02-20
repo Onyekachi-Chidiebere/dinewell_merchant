@@ -249,7 +249,6 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontFamily: 'MavenPro-SemiBold',
     fontSize: 12,
-    lineHeight: 9.6,
     letterSpacing: -0.4,
     color: colors.background.paper,
     textAlign: 'center',
