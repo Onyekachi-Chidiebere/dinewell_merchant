@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, ActivityIndicator, Alert } from 'react-native';
+import { StyleSheet, Text, View, FlatList, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import BackButton from '../components/BackButton';
 import { Pressable, SafeAreaView } from 'react-native';
 import colors from '../theme/colors';
@@ -105,11 +105,11 @@ const ManageCards = () => {
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <BackButton />
-                <Pressable onPress={openAddCard} style={styles.addCardButtonContainer}>
+                <TouchableOpacity onPress={() => {openAddCard()}} style={styles.addCardButtonContainer}>
                     <View style={styles.addCardButton}>
-                        <Text style={styles.addCardButtonText}>+</Text>
+                        <Text style={styles.addCardButtonText}>++</Text>
                     </View>
-                </Pressable>
+                </TouchableOpacity>
             </View>
             
             {error ? (

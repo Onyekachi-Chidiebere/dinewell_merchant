@@ -83,7 +83,7 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setTimeout(() => {
       setActiveSheet(null);
       setSheetData(null);
-    }, 300); // Clear data after animation completes
+    }, 100); // Clear data after animation completes
   }, []);
 
   return (

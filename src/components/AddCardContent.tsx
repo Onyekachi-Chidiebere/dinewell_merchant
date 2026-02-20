@@ -1,26 +1,32 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Dimensions, Alert } from 'react-native';
-import colors from '../theme/colors';
+import { View, Text, StyleSheet, Pressable, Dimensions, Alert, ScrollView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useCardContext } from '../context/CardContext';
 import { CardField } from '@stripe/stripe-react-native';
+import { useBottomSheet } from '../context/BottomSheetContext';
 
 const { width } = Dimensions.get('window');
 
 const AddCardContent = ({ onNext }: { onNext?: () => void }) => {
   const { addCard, loading } = useCardContext();
+  const { closeSheet } = useBottomSheet();
 
   const handleNext = async () => {
     try {
-      await addCard();
-      onNext?.();
+      const result = await addCard();
+
+      // On success, mirror AddDish behaviour: close the bottom sheet and then run any next callback
+      if (result !== null && result !== undefined) {
+        closeSheet();
+        onNext?.();
+      }
     } catch (e: any) {
       Alert.alert('Card Error', e?.message || 'Failed to add card');
     }
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Card Preview */}
       <View style={styles.previewWrapper}>
         <View style={styles.previewCard}>
@@ -58,7 +64,7 @@ const AddCardContent = ({ onNext }: { onNext?: () => void }) => {
         style={styles.cardField}
         placeholders={{ number: 'Card Number' }}
         cardStyle={{
-          backgroundColor: '#fff',
+          backgroundColor: '#FFFFFF',
           placeholderColor: '#8B8B9A',
           textColor: '#454B5E',
           borderRadius: 32,
@@ -69,7 +75,7 @@ const AddCardContent = ({ onNext }: { onNext?: () => void }) => {
       <Pressable style={styles.button} onPress={handleNext} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? 'Saving…' : 'Next'}</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -77,7 +83,8 @@ const CARD_RADIUS = 24;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   previewWrapper: {
     alignItems: 'center',
@@ -152,8 +159,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   button: {
-    marginTop: 24,
-    backgroundColor: colors.primary.main,
+    marginTop: 12,
+    marginBottom: 24,
+    backgroundColor: '#EF7013',
     height: 64,
     borderRadius: 40,
     alignItems: 'center',
