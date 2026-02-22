@@ -9,7 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import colors from '../theme/colors';
 import typography from '../theme/typography';
-import { ArrowLeftIcon, FaceIdIcon } from '../assets/icons';
+import { ArrowLeftIcon, FaceIdIcon, SecurityIcon } from '../assets/icons';
 
 type RootStackParamList = {
   Profile: undefined;
@@ -30,11 +30,22 @@ const SecurityScreen = () => {
       isEnabled: isFaceIdEnabled,
       icon: FaceIdIcon,
     },
+    {
+      id: 2,
+      title: 'Change Password',
+      subtitle: 'Change your password',
+      isToggle: false,
+      isEnabled: isFaceIdEnabled,
+      icon: SecurityIcon,
+    },
   ];
 
   const handleToggle = (id: number) => {
     if (id === 1) {
       setIsFaceIdEnabled(!isFaceIdEnabled);
+    }
+    if (id === 2) {
+      navigation.navigate('ChangePassword');
     }
   };
 
@@ -71,7 +82,7 @@ const SecurityScreen = () => {
                   <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
                 </View>
               </View>
-              <View style={[
+              {item.isToggle && <View style={[
                 styles.toggle,
                 item.isEnabled ? styles.toggleActive : styles.toggleInactive
               ]}>
@@ -80,6 +91,7 @@ const SecurityScreen = () => {
                   item.isEnabled ? styles.toggleCircleActive : styles.toggleCircleInactive
                 ]} />
               </View>
+              }
             </TouchableOpacity>
           ))}
         </View>

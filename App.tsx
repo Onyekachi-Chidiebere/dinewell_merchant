@@ -56,6 +56,7 @@ import { DishProvider } from './src/context/DishContext';
 import { CardProvider } from './src/context/CardContext';
 import { STRIPE_PUBLIC_KEY } from './src/theme/constants';
 import Toast from 'react-native-toast-message'
+import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -199,6 +200,7 @@ const AppStack = () => {
               <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
               <Stack.Screen name="ProfileDetails" component={ProfileDetailsScreen} />
               <Stack.Screen name="Security" component={SecurityScreen} />
+              <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
               <Stack.Screen name="Notifications" component={NotificationsScreen} />
               <Stack.Screen name="GetHelp" component={GetHelpScreen} />
               <Stack.Screen name="Legal" component={LegalScreen} />
