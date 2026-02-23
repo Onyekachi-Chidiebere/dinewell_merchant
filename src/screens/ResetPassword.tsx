@@ -1,21 +1,96 @@
-import React, { useState } from "react";
-import { Text, StyleSheet, SafeAreaView, View, TextInput, TouchableOpacity, Dimensions, KeyboardAvoidingView, Platform, Alert, Pressable } from "react-native";
+import React, { useState, useEffect } from "react";
+import { Text, StyleSheet, SafeAreaView, View, TextInput, TouchableOpacity, Dimensions, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import colors from "../theme/colors";
-import { useAppContext } from "../context/AppContext";
+import axios from "../api/axios";
+import Toast from "react-native-toast-message";
 
 const { width, height } = Dimensions.get("window");
 
-const ResetPassword = ({navigation}:any) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { login, loginLoading } = useAppContext();
+const ResetPassword = ({navigation, route}:any) => {
+  const { email: routeEmail, merchantId } = route?.params || {};
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetting, setResetting] = useState(false);
 
-  const onLogin = async () => {
+  useEffect(() => {
+    // If no email or merchantId from route, navigate back
+    if (!routeEmail || !merchantId) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Missing verification information. Please verify OTP again.'
+      });
+      navigation.goBack();
+    }
+  }, [routeEmail, merchantId, navigation]);
+
+  const handleResetPassword = async () => {
+    // Validation
+    if (!newPassword || !confirmPassword) {
+      Toast.show({
+        type: 'error',
+        text1: 'Fields Required',
+        text2: 'Please enter both new password and confirm password'
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      Toast.show({
+        type: 'error',
+        text1: 'Password Error',
+        text2: 'Password must be at least 6 characters long'
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      Toast.show({
+        type: 'error',
+        text1: 'Password Mismatch',
+        text2: 'New password and confirm password do not match'
+      });
+      return;
+    }
+
+    if (!merchantId || !routeEmail) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Missing verification information'
+      });
+      return;
+    }
+
     try {
-      await login({ email, password });
-      // App navigation will switch automatically via context
-    } catch (e) {
+      setResetting(true);
+      const response = await axios.post('/merchant/forgot-password/reset', {
+        merchantId,
+        email: routeEmail,
+        newPassword
+      });
+
+      if (response.data.success) {
+        Toast.show({
+          type: 'success',
+          text1: 'Password Reset',
+          text2: response.data.message || 'Password reset successfully',
+          onHide: () => {
+            // Navigate to login screen
+            navigation.navigate('Login');
+          }
+        });
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to reset password';
+      Toast.show({
+        type: 'error',
+        text1: 'Reset Failed',
+        text2: errorMessage
+      });
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -39,31 +114,42 @@ const ResetPassword = ({navigation}:any) => {
             <View style={styles.formWrapper}>
               <TextInput
                 style={styles.input}
-                placeholder="Enter New Paassword"
+                placeholder="Enter New Password"
                 placeholderTextColor="#8B8B9A"
-                value={email}
-                onChangeText={setEmail}
+                value={newPassword}
+                onChangeText={setNewPassword}
                 secureTextEntry
                 textContentType="password"
                 autoCorrect={false}
+                autoCapitalize="none"
               />
 
               <TextInput
                 style={styles.input}
-                placeholder="Confrim New Pasword"
+                placeholder="Confirm New Password"
                 placeholderTextColor="#8B8B9A"
-                value={password}
-                onChangeText={setPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
                 secureTextEntry
                 textContentType="password"
                 autoCorrect={false}
+                autoCapitalize="none"
               />
            
             </View>
 
             <View style={styles.bottomWrapper}>
-              <TouchableOpacity style={styles.button} activeOpacity={0.8} onPress={onLogin} disabled={loginLoading}>
-                <Text style={styles.buttonText}>{loginLoading ? 'Resetting' : 'Reset Password'}</Text>
+              <TouchableOpacity 
+                style={[styles.button, resetting && styles.buttonDisabled]} 
+                activeOpacity={0.8} 
+                onPress={handleResetPassword} 
+                disabled={resetting}
+              >
+                {resetting ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Reset Password</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -141,5 +227,8 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "700",
     color: "#fff",
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 });
