@@ -6,14 +6,14 @@ import { useAppContext } from "../context/AppContext";
 
 const { width, height } = Dimensions.get("window");
 
-const Login = ({navigation}:any) => {
+const PasswordResetOtp = ({navigation}:any) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, loginLoading } = useAppContext();
+  const [submiting, setSubmiting] = useState(false)
 
-  const onLogin = async () => {
+  const onSubmit = async () => {
     try {
-      await login({ email, password });
+     navigation.navigate('ResetPassword')
       // App navigation will switch automatically via context
     } catch (e) {
     }
@@ -34,12 +34,12 @@ const Login = ({navigation}:any) => {
         >
           <View style={styles.outerWrapper}>
             <View style={styles.headerWrapper}>
-              <Text style={styles.title}>{"Login\nDetails"}</Text>
+              <Text style={styles.title}>{"Verify\nEmail"}</Text>
             </View>
             <View style={styles.formWrapper}>
               <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder="Enter Email"
                 placeholderTextColor="#8B8B9A"
                 value={email}
                 onChangeText={setEmail}
@@ -48,10 +48,12 @@ const Login = ({navigation}:any) => {
                 textContentType="emailAddress"
                 autoCorrect={false}
               />
-
+              <View style={styles.forgotPasswordHolder}>
+                <Pressable><Text style={styles.forgotPasswordText}>Get Otp</Text></Pressable>
+              </View>
               <TextInput
                 style={styles.input}
-                placeholder="Password"
+                placeholder="Enter OTP"
                 placeholderTextColor="#8B8B9A"
                 value={password}
                 onChangeText={setPassword}
@@ -59,14 +61,12 @@ const Login = ({navigation}:any) => {
                 textContentType="password"
                 autoCorrect={false}
               />
-              <View style={styles.forgotPasswordHolder}>
-                <Pressable onPress={()=>{navigation.navigate('PasswordResetOtp')}}><Text style={styles.forgotPasswordText}>Forgot Passwprd?</Text></Pressable>
-              </View>
+
             </View>
 
             <View style={styles.bottomWrapper}>
-              <TouchableOpacity style={styles.button} activeOpacity={0.8} onPress={onLogin} disabled={loginLoading}>
-                <Text style={styles.buttonText}>{loginLoading ? 'Logging in...' : 'Login'}</Text>
+              <TouchableOpacity style={styles.button} activeOpacity={0.8} onPress={onSubmit} disabled={submiting}>
+                <Text style={styles.buttonText}>{submiting ? 'Verifying...' : 'Verify'}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -76,16 +76,16 @@ const Login = ({navigation}:any) => {
   );
 };
 
-export default Login;
+export default PasswordResetOtp;
 
 const styles = StyleSheet.create({
-  forgotPasswordText:{
-    color:colors.primary.main
+  forgotPasswordText: {
+    color: colors.primary.main
   },
-  forgotPasswordHolder:{
-    alignItems:'flex-end',
-    width:'100%',
-    paddingHorizontal:20
+  forgotPasswordHolder: {
+    alignItems: 'flex-end',
+    width: '100%',
+    paddingHorizontal: 40
   },
   container: {
     flex: 1,
@@ -124,7 +124,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontStyle: "italic",
     color: "#454B5E",
-    marginBottom: 12,
+    marginTop: 12,
+    marginBottom:5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,

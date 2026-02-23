@@ -57,6 +57,8 @@ import { CardProvider } from './src/context/CardContext';
 import { STRIPE_PUBLIC_KEY } from './src/theme/constants';
 import Toast from 'react-native-toast-message'
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
+import PasswordResetOtp from './src/screens/PasswordResetOtp';
+import ResetPassword from './src/screens/ResetPassword';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -231,6 +233,8 @@ const AuthWithSignup = () => (
         <Stack.Screen name="RestaurantAddress" component={RestaurantAddress} />
         <Stack.Screen name="RestaurantPictures" component={RestaurantPictures} />
         <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="PasswordResetOtp" component={PasswordResetOtp} />
+        <Stack.Screen name="ResetPassword" component={ResetPassword} />
       </Stack.Navigator>
     </SignupProvider>
   </NavigationContainer>

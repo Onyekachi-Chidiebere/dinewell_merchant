@@ -6,7 +6,7 @@ import { useAppContext } from "../context/AppContext";
 
 const { width, height } = Dimensions.get("window");
 
-const Login = ({navigation}:any) => {
+const ResetPassword = ({navigation}:any) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login, loginLoading } = useAppContext();
@@ -34,24 +34,23 @@ const Login = ({navigation}:any) => {
         >
           <View style={styles.outerWrapper}>
             <View style={styles.headerWrapper}>
-              <Text style={styles.title}>{"Login\nDetails"}</Text>
+              <Text style={styles.title}>{"Reset\nPassword"}</Text>
             </View>
             <View style={styles.formWrapper}>
               <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder="Enter New Paassword"
                 placeholderTextColor="#8B8B9A"
                 value={email}
                 onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                textContentType="emailAddress"
+                secureTextEntry
+                textContentType="password"
                 autoCorrect={false}
               />
 
               <TextInput
                 style={styles.input}
-                placeholder="Password"
+                placeholder="Confrim New Pasword"
                 placeholderTextColor="#8B8B9A"
                 value={password}
                 onChangeText={setPassword}
@@ -59,14 +58,12 @@ const Login = ({navigation}:any) => {
                 textContentType="password"
                 autoCorrect={false}
               />
-              <View style={styles.forgotPasswordHolder}>
-                <Pressable onPress={()=>{navigation.navigate('PasswordResetOtp')}}><Text style={styles.forgotPasswordText}>Forgot Passwprd?</Text></Pressable>
-              </View>
+           
             </View>
 
             <View style={styles.bottomWrapper}>
               <TouchableOpacity style={styles.button} activeOpacity={0.8} onPress={onLogin} disabled={loginLoading}>
-                <Text style={styles.buttonText}>{loginLoading ? 'Logging in...' : 'Login'}</Text>
+                <Text style={styles.buttonText}>{loginLoading ? 'Resetting' : 'Reset Password'}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -76,17 +73,10 @@ const Login = ({navigation}:any) => {
   );
 };
 
-export default Login;
+export default ResetPassword;
 
 const styles = StyleSheet.create({
-  forgotPasswordText:{
-    color:colors.primary.main
-  },
-  forgotPasswordHolder:{
-    alignItems:'flex-end',
-    width:'100%',
-    paddingHorizontal:20
-  },
+
   container: {
     flex: 1,
   },
