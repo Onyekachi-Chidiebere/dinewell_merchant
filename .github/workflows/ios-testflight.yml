@@ -21,7 +21,7 @@ env:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v6
 
@@ -57,7 +57,7 @@ jobs:
           set -euo pipefail
           PP_PATH="$RUNNER_TEMP/build_profile.mobileprovision"
           PP_PLIST="$RUNNER_TEMP/profile.plist"
-          echo -n "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode -o "$PP_PATH"
+          echo -n "$IOS_PROVISIONING_PROFILE_BASE64" | tr -d '[:space:]' | base64 --decode -o "$PP_PATH"
           security cms -D -i "$PP_PATH" > "$PP_PLIST"
 
           PP_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" "$PP_PLIST")
@@ -96,11 +96,21 @@ jobs:
           echo "IOS_PROFILE_UUID=$PP_UUID" >> "$GITHUB_ENV"
           echo "IOS_PROFILE_NAME=$PP_NAME" >> "$GITHUB_ENV"
 
+      - name: Verify code signing setup
+        run: |
+          set -euo pipefail
+          echo "Xcode: $(xcodebuild -version | tr '\n' ' ')"
+          echo "Installed provisioning profiles:"
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles" || true
+          echo "Available signing identities:"
+          security find-identity -v -p codesigning
+
       - name: Archive iOS app
         run: |
           set -euo pipefail
           mkdir -p build
 
+          set +e
           xcodebuild \
             -workspace "$IOS_WORKSPACE" \
             -scheme "$IOS_SCHEME" \
@@ -108,12 +118,22 @@ jobs:
             -sdk iphoneos \
             -destination "generic/platform=iOS" \
             -archivePath "build/${IOS_SCHEME}.xcarchive" \
+            -resultBundlePath "build/Archive.xcresult" \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="$IOS_CODE_SIGN_IDENTITY" \
             DEVELOPMENT_TEAM="$IOS_TEAM_ID" \
             PROVISIONING_PROFILE="$IOS_PROFILE_UUID" \
             CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
-            archive
+            archive 2>&1 | tee build/archive.log
+          ARCHIVE_STATUS=${PIPESTATUS[0]}
+          set -e
+
+          if [ "$ARCHIVE_STATUS" -ne 0 ]; then
+            echo "::group::Archive errors"
+            grep -E "error:|ARCHIVE FAILED|Code Sign error|No profile|signing" build/archive.log || tail -n 80 build/archive.log
+            echo "::endgroup::"
+            exit "$ARCHIVE_STATUS"
+          fi
 
       - name: Export IPA for TestFlight
         run: |
@@ -121,33 +141,30 @@ jobs:
 
           mkdir -p build/export
 
-          cat > build/ExportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>teamID</key>
-            <string>${IOS_TEAM_ID}</string>
-            <key>compileBitcode</key>
-            <false/>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>${IOS_BUNDLE_ID}</key>
-              <string>${IOS_PROFILE_NAME}</string>
-            </dict>
-          </dict>
-          </plist>
-          EOF
+          rm -f build/ExportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :method string app-store" build/ExportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :signingStyle string manual" build/ExportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :teamID string ${IOS_TEAM_ID}" build/ExportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :compileBitcode bool false" build/ExportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles dict" build/ExportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles:${IOS_BUNDLE_ID} string ${IOS_PROFILE_UUID}" build/ExportOptions.plist
 
+          set +e
           xcodebuild \
             -exportArchive \
             -archivePath "build/${IOS_SCHEME}.xcarchive" \
             -exportPath "build/export" \
-            -exportOptionsPlist "build/ExportOptions.plist"
+            -exportOptionsPlist build/ExportOptions.plist \
+            2>&1 | tee build/export.log
+          EXPORT_STATUS=${PIPESTATUS[0]}
+          set -e
+
+          if [ "$EXPORT_STATUS" -ne 0 ]; then
+            echo "::group::Export errors"
+            grep -E "error:|EXPORT FAILED|signing|profile" build/export.log || tail -n 80 build/export.log
+            echo "::endgroup::"
+            exit "$EXPORT_STATUS"
+          fi
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v6
