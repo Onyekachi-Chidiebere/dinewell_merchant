@@ -17,7 +17,7 @@ env:
   IOS_SCHEME: DineWellMerchant
   IOS_BUNDLE_ID: org.dinewell.DineWellMerchant
   IOS_TEAM_ID: KB8PK63CSQ
-  IOS_CODE_SIGN_IDENTITY: iPhone Distribution
+  IOS_CODE_SIGN_IDENTITY: Apple Distribution
 
 jobs:
   build:
@@ -57,8 +57,9 @@ jobs:
           set -euo pipefail
           PP_PATH="$RUNNER_TEMP/build_profile.mobileprovision"
           echo -n "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode -o "$PP_PATH"
+          PP_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< "$(security cms -D -i "$PP_PATH")")
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/"
+          cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/${PP_UUID}.mobileprovision"
 
       - name: Archive iOS app
         env:
@@ -74,6 +75,7 @@ jobs:
             -sdk iphoneos \
             -destination "generic/platform=iOS" \
             -archivePath "build/${IOS_SCHEME}.xcarchive" \
+            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="$IOS_CODE_SIGN_IDENTITY" \
             DEVELOPMENT_TEAM="$IOS_TEAM_ID" \
             PROVISIONING_PROFILE_SPECIFIER="$IOS_PROVISIONING_PROFILE_SPECIFIER" \
