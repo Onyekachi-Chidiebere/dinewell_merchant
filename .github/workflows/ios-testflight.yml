@@ -56,14 +56,37 @@ jobs:
         run: |
           set -euo pipefail
           PP_PATH="$RUNNER_TEMP/build_profile.mobileprovision"
+          PP_PLIST="$RUNNER_TEMP/profile.plist"
           echo -n "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode -o "$PP_PATH"
-          PP_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< "$(security cms -D -i "$PP_PATH")")
+          security cms -D -i "$PP_PATH" > "$PP_PLIST"
+
+          PP_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" "$PP_PLIST")
+          PP_NAME=$(/usr/libexec/PlistBuddy -c "Print Name" "$PP_PLIST")
+          PP_TEAM=$(/usr/libexec/PlistBuddy -c "Print TeamIdentifier.0" "$PP_PLIST")
+          PP_APP_ID=$(/usr/libexec/PlistBuddy -c "Print Entitlements:application-identifier" "$PP_PLIST")
+
+          echo "Installed profile name: $PP_NAME"
+          echo "Installed profile UUID: $PP_UUID"
+          echo "Profile team ID: $PP_TEAM"
+          echo "Profile app identifier: $PP_APP_ID"
+
+          if [ "$PP_TEAM" != "$IOS_TEAM_ID" ]; then
+            echo "Profile team ($PP_TEAM) does not match IOS_TEAM_ID ($IOS_TEAM_ID)"
+            exit 1
+          fi
+
+          if [[ "$PP_APP_ID" != *".$IOS_BUNDLE_ID" ]]; then
+            echo "Profile bundle ($PP_APP_ID) does not match IOS_BUNDLE_ID ($IOS_BUNDLE_ID)"
+            exit 1
+          fi
+
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/${PP_UUID}.mobileprovision"
 
+          echo "IOS_PROFILE_UUID=$PP_UUID" >> "$GITHUB_ENV"
+          echo "IOS_PROFILE_NAME=$PP_NAME" >> "$GITHUB_ENV"
+
       - name: Archive iOS app
-        env:
-          IOS_PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.IOS_PROVISIONING_PROFILE_SPECIFIER }}
         run: |
           set -euo pipefail
           mkdir -p build
@@ -78,13 +101,11 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="$IOS_CODE_SIGN_IDENTITY" \
             DEVELOPMENT_TEAM="$IOS_TEAM_ID" \
-            PROVISIONING_PROFILE_SPECIFIER="$IOS_PROVISIONING_PROFILE_SPECIFIER" \
+            PROVISIONING_PROFILE="$IOS_PROFILE_UUID" \
             CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
             archive
 
       - name: Export IPA for TestFlight
-        env:
-          IOS_PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.IOS_PROVISIONING_PROFILE_SPECIFIER }}
         run: |
           set -euo pipefail
 
@@ -106,7 +127,7 @@ jobs:
             <key>provisioningProfiles</key>
             <dict>
               <key>${IOS_BUNDLE_ID}</key>
-              <string>${IOS_PROVISIONING_PROFILE_SPECIFIER}</string>
+              <string>${IOS_PROFILE_NAME}</string>
             </dict>
           </dict>
           </plist>
