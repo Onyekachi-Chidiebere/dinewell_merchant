@@ -253,12 +253,18 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
-          echo "Uploading $IPA_PATH to TestFlight..."
-          xcrun iTMSTransporter -m upload \
-            -assetFile "$IPA_PATH" \
-            -apiKey "$APPSTORE_API_KEY_ID_CLEAN" \
-            -apiIssuer "$APPSTORE_ISSUER_ID_CLEAN" \
-            -appPlatform ios \
-            -v eXtreme
-          echo "Upload submitted. Check App Store Connect → TestFlight in 10–30 minutes."
+          echo "Uploading $IPA_PATH to TestFlight (altool)..."
+          # GitHub-hosted runners do not include Transporter.app; iTMSTransporter fails with -10814.
+          if ! xcrun altool --upload-app \
+            -f "$IPA_PATH" \
+            -t ios \
+            --apiKey "$APPSTORE_API_KEY_ID_CLEAN" \
+            --apiIssuer "$APPSTORE_ISSUER_ID_CLEAN" \
+            --output-format xml 2>&1 | tee /tmp/altool-upload.log; then
+            echo "::group::Upload errors"
+            grep -E "error|Error|failed|FAILED" /tmp/altool-upload.log || tail -n 50 /tmp/altool-upload.log
+            echo "::endgroup::"
+            exit 1
+          fi
+          echo "Upload submitted. Check App Store Connect → Dinewell Merchant → TestFlight in 10–30 minutes."
 
