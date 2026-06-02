@@ -60,5 +60,22 @@ target 'DineWellMerchant' do
         end
       end
     end
+
+    # Xcode 26: StripeSdk.mm fails due to STPPaymentStatus enum mismatch (stripe-react-native < 0.61).
+    stripe_interop = File.expand_path('../node_modules/@stripe/stripe-react-native/ios/StripeSwiftInterop.h', __dir__)
+    if File.exist?(stripe_interop)
+      content = File.read(stripe_interop)
+      unless content.include?('Xcode 26 workaround')
+        patched = content.gsub(
+          'typedef NS_ENUM(NSUInteger, STPPaymentStatus);',
+          "// Xcode 26 workaround\ntypedef NS_ENUM(NSInteger, STPPaymentStatus);"
+        )
+        if patched != content
+          File.chmod(0644, stripe_interop)
+          File.write(stripe_interop, patched)
+          Pod::UI.puts 'Patched StripeSwiftInterop.h for Xcode 26'.green
+        end
+      end
+    end
   end
 end
