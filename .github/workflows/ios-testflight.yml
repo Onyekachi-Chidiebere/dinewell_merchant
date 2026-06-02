@@ -188,6 +188,38 @@ jobs:
           fi
           echo "IPA_PATH=${ipa_files[0]}" >> "$GITHUB_ENV"
 
+      - name: Prepare App Store Connect API key
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+        id: asc_api_key
+        env:
+          APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+          APPSTORE_API_PRIVATE_KEY_BASE64: ${{ secrets.APPSTORE_API_PRIVATE_KEY_BASE64 }}
+        run: |
+          set -euo pipefail
+          KEY_PATH="$RUNNER_TEMP/AuthKey.p8"
+
+          if [ -n "${APPSTORE_API_PRIVATE_KEY_BASE64:-}" ]; then
+            echo -n "$APPSTORE_API_PRIVATE_KEY_BASE64" | tr -d '[:space:]' | base64 --decode > "$KEY_PATH"
+          elif [[ "${APPSTORE_API_PRIVATE_KEY:-}" == *"BEGIN PRIVATE KEY"* ]]; then
+            if [[ "$APPSTORE_API_PRIVATE_KEY" == *'\\n'* ]]; then
+              printf '%b\n' "$APPSTORE_API_PRIVATE_KEY" > "$KEY_PATH"
+            else
+              printf '%s\n' "$APPSTORE_API_PRIVATE_KEY" > "$KEY_PATH"
+            fi
+          else
+            echo "APPSTORE_API_PRIVATE_KEY is missing or invalid."
+            echo "Paste the full AuthKey_XXXX.p8 contents, or set APPSTORE_API_PRIVATE_KEY_BASE64 instead."
+            exit 1
+          fi
+
+          openssl pkey -in "$KEY_PATH" -noout >/dev/null
+
+          {
+            echo 'content<<P8EOF'
+            cat "$KEY_PATH"
+            echo P8EOF
+          } >> "$GITHUB_OUTPUT"
+
       - name: Upload app to TestFlight
         if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
         uses: apple-actions/upload-testflight-build@v4
@@ -195,5 +227,5 @@ jobs:
           app-path: ${{ env.IPA_PATH }}
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
-          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+          api-private-key: ${{ steps.asc_api_key.outputs.content }}
 
