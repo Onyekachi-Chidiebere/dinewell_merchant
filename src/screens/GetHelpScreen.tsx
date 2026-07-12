@@ -4,8 +4,8 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
+  Linking,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -25,27 +25,34 @@ const GetHelpScreen = () => {
   const helpItems = [
     {
       id: 1,
-      title: 'Have feedback or need support? Send us an Email',
-      subtitle: 'support@dinewell.com',
+      title: 'Email',
+      subtitle: 'hello@dinewell.ca',
+      note: 'Reply within 24 hrs',
       icon: EmailIcon,
+      onPress: () => Linking.openURL('mailto:hello@dinewell.ca'),
     },
     {
       id: 2,
-      title: 'Our agents are available 9am - 5pm',
-      subtitle: '09530838430, 048280242',
+      title: 'Phone',
+      subtitle: '+1 (306) 555-1234',
+      note: 'Mon – Fri, 9 AM – 6 PM CST',
       icon: PhoneIcon,
+      onPress: () => Linking.openURL('tel:+13065551234'),
     },
     {
       id: 3,
-      title: 'Whatsapp support is available 24/7',
-      subtitle: '00221144336655',
-      icon: PhoneIcon,
+      title: 'Office',
+      subtitle: '3502 Green Brook Rd, Regina, SK S4V 1R5',
+      note: 'Canada',
+      icon: LocationIcon,
     },
     {
       id: 4,
-      title: 'Visit us at our Office Address',
-      subtitle: 'Somewhere within Ontario, Canada',
-      icon: LocationIcon,
+      title: 'Partnerships',
+      subtitle: 'hello@dinewell.ca',
+      note: 'Venue & business inquiries',
+      icon: EmailIcon,
+      onPress: () => Linking.openURL('mailto:hello@dinewell.ca'),
     },
   ];
 
@@ -53,6 +60,9 @@ const GetHelpScreen = () => {
     <TouchableOpacity
       key={item.id}
       style={styles.helpItem}
+      onPress={item.onPress}
+      disabled={!item.onPress}
+      activeOpacity={item.onPress ? 0.7 : 1}
     >
       <View style={styles.helpItemLeft}>
         <View style={styles.iconContainer}>
@@ -61,6 +71,7 @@ const GetHelpScreen = () => {
         <View style={styles.helpItemContent}>
           <Text style={styles.helpItemTitle}>{item.title}</Text>
           <Text style={styles.helpItemSubtitle}>{item.subtitle}</Text>
+          {item.note ? <Text style={styles.helpItemNote}>{item.note}</Text> : null}
         </View>
       </View>
     </TouchableOpacity>
@@ -161,6 +172,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   helpItemSubtitle: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    fontWeight: '500',
+  },
+  helpItemNote: {
     ...typography.caption,
     color: colors.text.tertiary,
   },

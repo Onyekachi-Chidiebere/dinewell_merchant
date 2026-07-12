@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  Pressable,
+  TextInput,
 } from 'react-native';
 import colors from '../theme/colors';
 import { CloseIcon , CloseAccountIcon} from '../assets/icons';
@@ -16,21 +16,50 @@ type Props = {
   onSubmit: (reason: string) => void;
 };
 
+const OTHER_REASON = 'Other';
+
 const reasons = [
   'Switching Apps?',
   'Poor Customer Service',
   'App is too technical',
   'Tired of Dinewell',
-  'Other',
+  OTHER_REASON,
 ];
 
 const CloseAccountModal = ({ visible, onClose, onSubmit }: Props) => {
   const [selectedReason, setSelectedReason] = useState('');
+  const [otherReasonText, setOtherReasonText] = useState('');
+
+  const handleReasonSelect = (reason: string) => {
+    setSelectedReason(reason);
+    if (reason !== OTHER_REASON) {
+      setOtherReasonText('');
+    }
+  };
+
+  const canSubmit =
+    Boolean(selectedReason) &&
+    (selectedReason !== OTHER_REASON || otherReasonText.trim().length > 0);
+
+  const handleClose = () => {
+    setSelectedReason('');
+    setOtherReasonText('');
+    onClose();
+  };
 
   const handleSubmit = () => {
-    if (selectedReason) {
-      onSubmit(selectedReason);
+    if (!canSubmit) {
+      return;
     }
+
+    const reason =
+      selectedReason === OTHER_REASON
+        ? `Other: ${otherReasonText.trim()}`
+        : selectedReason;
+
+    onSubmit(reason);
+    setSelectedReason('');
+    setOtherReasonText('');
   };
 
   return (
@@ -38,12 +67,12 @@ const CloseAccountModal = ({ visible, onClose, onSubmit }: Props) => {
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           <View style={styles.header}>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
               <CloseIcon width={24} height={24}  />
             </TouchableOpacity>
           </View>
@@ -63,7 +92,7 @@ const CloseAccountModal = ({ visible, onClose, onSubmit }: Props) => {
               <React.Fragment key={reason}>
                 <TouchableOpacity
                   style={styles.reasonItem}
-                  onPress={() => setSelectedReason(reason)}
+                  onPress={() => handleReasonSelect(reason)}
                 >
                   <View style={[
                     styles.radioButton,
@@ -74,6 +103,18 @@ const CloseAccountModal = ({ visible, onClose, onSubmit }: Props) => {
                 {index < reasons.length - 1 && <View style={styles.divider} />}
               </React.Fragment>
             ))}
+            {selectedReason === OTHER_REASON && (
+              <TextInput
+                style={styles.otherInput}
+                placeholder="Tell us more..."
+                placeholderTextColor={colors.text.tertiary}
+                value={otherReasonText}
+                onChangeText={setOtherReasonText}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
+            )}
             <View style={styles.divider} />
           </View>
 
@@ -81,10 +122,10 @@ const CloseAccountModal = ({ visible, onClose, onSubmit }: Props) => {
             <TouchableOpacity
               style={[
                 styles.submitButton,
-                !selectedReason && styles.submitButtonDisabled
+                !canSubmit && styles.submitButtonDisabled
               ]}
               onPress={handleSubmit}
-              disabled={!selectedReason}
+              disabled={!canSubmit}
             >
               <Text style={styles.submitButtonText}>Submit Request</Text>
             </TouchableOpacity>
@@ -218,6 +259,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 14.4,
     color: colors.text.primary,
+  },
+  otherInput: {
+    minHeight: 88,
+    borderWidth: 0.4,
+    borderColor: '#EBEEFF',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontFamily: 'RedHatDisplay-Regular',
+    fontSize: 12,
+    lineHeight: 16,
+    color: colors.text.primary,
+    backgroundColor: colors.background.default,
   },
   buttonContainer: {
     alignItems: 'center',

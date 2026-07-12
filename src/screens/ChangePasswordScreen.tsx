@@ -17,6 +17,10 @@ import FormInput from '../components/FomInput';
 import { useAppContext } from '../context/AppContext';
 import axios from '../api/axios';
 import Toast from 'react-native-toast-message';
+import {
+  isBiometricEnabled,
+  saveLoginCredentials,
+} from '../services/biometricAuth';
 
 type RootStackParamList = {
   Profile: undefined;
@@ -78,6 +82,10 @@ const ChangePasswordScreen = () => {
       });
 
       if (response.data.success) {
+        if (user?.email && (await isBiometricEnabled())) {
+          await saveLoginCredentials(user.email, newPassword);
+        }
+
         // Clear form
         setCurrentPassword('');
         setNewPassword('');

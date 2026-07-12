@@ -1,33 +1,110 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Toast from 'react-native-toast-message';
 import colors from '../theme/colors';
 import typography from '../theme/typography';
 import { ArrowLeftIcon, FaceIdIcon, SecurityIcon } from '../assets/icons';
+import {
+  authenticateBiometric,
+  getBiometricSupport,
+  isBiometricEnabled,
+  setBiometricEnabled,
+} from '../services/biometricAuth';
 
 type RootStackParamList = {
   Profile: undefined;
+  ChangePassword: undefined;
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const SecurityScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [isFaceIdEnabled, setIsFaceIdEnabled] = useState(false);
+  const [isBiometricOn, setIsBiometricOn] = useState(false);
+  const [biometricLabel, setBiometricLabel] = useState('Biometrics');
+  const [isAvailable, setIsAvailable] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const loadBiometricSettings = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [support, enabled] = await Promise.all([
+        getBiometricSupport(),
+        isBiometricEnabled(),
+      ]);
+      setBiometricLabel(support.label);
+      setIsAvailable(support.available);
+      setIsBiometricOn(enabled && support.available);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadBiometricSettings();
+  }, [loadBiometricSettings]);
+
+  const handleBiometricToggle = async () => {
+    if (!isAvailable || isUpdating) {
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      if (isBiometricOn) {
+        await setBiometricEnabled(false);
+        setIsBiometricOn(false);
+        Toast.show({
+          type: 'success',
+          text1: `${biometricLabel} disabled`,
+        });
+        return;
+      }
+
+      const success = await authenticateBiometric(
+        `Enable ${biometricLabel} for DineWell Merchant`,
+      );
+
+      if (!success) {
+        Toast.show({
+          type: 'info',
+          text1: `${biometricLabel} not enabled`,
+          text2: 'Authentication was cancelled or failed.',
+        });
+        return;
+      }
+
+      await setBiometricEnabled(true);
+      setIsBiometricOn(true);
+      Toast.show({
+        type: 'success',
+        text1: `${biometricLabel} enabled`,
+        text2: 'Sign in once with email to finish setup, then use biometrics to unlock and sign in.',
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const menuItems = [
     {
       id: 1,
-      title: 'Face ID',
-      subtitle: 'Account name,email,phone',
+      title: biometricLabel,
+      subtitle: isAvailable
+        ? 'Unlock the app and sign in with biometrics'
+        : 'Biometrics are not available on this device',
       isToggle: true,
-      isEnabled: isFaceIdEnabled,
+      isEnabled: isBiometricOn,
+      isDisabled: !isAvailable || isLoading || isUpdating,
       icon: FaceIdIcon,
     },
     {
@@ -35,14 +112,14 @@ const SecurityScreen = () => {
       title: 'Change Password',
       subtitle: 'Change your password',
       isToggle: false,
-      isEnabled: isFaceIdEnabled,
       icon: SecurityIcon,
     },
   ];
 
-  const handleToggle = (id: number) => {
+  const handleItemPress = (id: number) => {
     if (id === 1) {
-      setIsFaceIdEnabled(!isFaceIdEnabled);
+      handleBiometricToggle();
+      return;
     }
     if (id === 2) {
       navigation.navigate('ChangePassword');
@@ -54,7 +131,7 @@ const SecurityScreen = () => {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerLeft}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
@@ -70,8 +147,13 @@ const SecurityScreen = () => {
           {menuItems.map((item) => (
             <TouchableOpacity
               key={item.id}
-              style={styles.menuItem}
-              onPress={() => handleToggle(item.id)}
+              style={[
+                styles.menuItem,
+                item.isDisabled ? styles.menuItemDisabled : null,
+              ]}
+              onPress={() => handleItemPress(item.id)}
+              disabled={item.isDisabled}
+              activeOpacity={0.7}
             >
               <View style={styles.menuItemLeft}>
                 <View style={styles.iconContainer}>
@@ -82,16 +164,27 @@ const SecurityScreen = () => {
                   <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
                 </View>
               </View>
-              {item.isToggle && <View style={[
-                styles.toggle,
-                item.isEnabled ? styles.toggleActive : styles.toggleInactive
-              ]}>
-                <View style={[
-                  styles.toggleCircle,
-                  item.isEnabled ? styles.toggleCircleActive : styles.toggleCircleInactive
-                ]} />
-              </View>
-              }
+              {item.isToggle && (
+                isUpdating && item.id === 1 ? (
+                  <ActivityIndicator size="small" color={colors.primary.main} />
+                ) : (
+                  <View
+                    style={[
+                      styles.toggle,
+                      item.isEnabled ? styles.toggleActive : styles.toggleInactive,
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.toggleCircle,
+                        item.isEnabled
+                          ? styles.toggleCircleActive
+                          : styles.toggleCircleInactive,
+                      ]}
+                    />
+                  </View>
+                )
+              )}
             </TouchableOpacity>
           ))}
         </View>
@@ -154,10 +247,15 @@ const styles = StyleSheet.create({
     borderWidth: 0.4,
     borderColor: colors.border.subtle,
   },
+  menuItemDisabled: {
+    opacity: 0.6,
+  },
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flex: 1,
+    paddingRight: 8,
   },
   iconContainer: {
     width: 32,
@@ -169,6 +267,7 @@ const styles = StyleSheet.create({
   },
   menuItemContent: {
     gap: 4,
+    flex: 1,
   },
   menuItemTitle: {
     ...typography.subtitle2,
@@ -209,4 +308,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SecurityScreen; 
+export default SecurityScreen;

@@ -4,85 +4,59 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
+  ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import colors from '../theme/colors';
 import typography from '../theme/typography';
-import { ArrowLeftIcon, ArrowRightIcon } from '../assets/icons';
+import { ArrowLeftIcon } from '../assets/icons';
+import { TERMS_AND_CONDITIONS } from '../content/termsAndConditions';
 
 type RootStackParamList = {
   Legal: undefined;
   TermsAndConditions: undefined;
-  PrivacyPolicy: undefined;
-  Faqs: undefined;
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const LegalScreen = () => {
+const TermsAndConditionsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-
-  const menuItems = [
-    {
-      id: 1,
-      title: 'Terms & Conditions',
-      route: 'TermsAndConditions' as const,
-    },
-    {
-      id: 2,
-      title: 'Privacy Policy',
-      route: 'PrivacyPolicy' as const,
-    },
-    // {
-    //   id: 3,
-    //   title: 'Disclaimer',
-    // },
-    {
-      id: 4,
-      title: 'FAQs',
-      route: 'Faqs' as const,
-    },
-  ];
+  const { company, jurisdiction, bn, lastUpdated, sections } = TERMS_AND_CONDITIONS;
 
   return (
     <View style={styles.container}>
-      
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerLeft}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
               <ArrowLeftIcon width={24} height={24} color={colors.border.subtle} />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Legal</Text>
+            <Text style={styles.headerTitle}>Terms & Conditions</Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.menuGroup}>
-          {menuItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.menuItem}
-              onPress={() => {
-                if ('route' in item && item.route) {
-                  navigation.navigate(item.route);
-                }
-              }}
-            >
-              <View style={styles.menuItemContent}>
-                <Text style={styles.menuItemTitle}>{item.title}</Text>
-              </View>
-                <ArrowRightIcon width={16} height={16} color={colors.border.subtle} />
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.metaTitle}>{company}</Text>
+        <Text style={styles.metaText}>Jurisdiction: {jurisdiction}</Text>
+        <Text style={styles.metaText}>BN: {bn}</Text>
+        <Text style={styles.lastUpdated}>Last updated: {lastUpdated}</Text>
+
+        {sections.map((section) => (
+          <View key={section.title} style={styles.section}>
+            <Text style={styles.sectionTitle}>{section.title}</Text>
+            <Text style={styles.sectionBody}>{section.body}</Text>
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 };
@@ -125,31 +99,43 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-  content: {
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
     padding: 16,
+    paddingBottom: 40,
   },
-  menuGroup: {
-    gap: 16,
+  metaTitle: {
+    ...typography.subtitle1,
+    color: colors.text.primary,
+    fontWeight: '700',
+    marginBottom: 8,
   },
-  menuItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: colors.background.default,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 0.4,
-    borderColor: colors.border.subtle,
+  metaText: {
+    ...typography.body2,
+    color: colors.text.secondary,
+    marginBottom: 4,
   },
-  menuItemContent: {
-    gap: 4,
+  lastUpdated: {
+    ...typography.caption,
+    color: colors.text.tertiary,
+    marginBottom: 24,
   },
-  menuItemTitle: {
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
     ...typography.subtitle2,
     color: colors.text.primary,
-    fontWeight: '600',
+    fontWeight: '700',
+    marginBottom: 8,
   },
- 
+  sectionBody: {
+    ...typography.body2,
+    color: colors.text.secondary,
+    lineHeight: 22,
+  },
 });
 
-export default LegalScreen; 
+export default TermsAndConditionsScreen;

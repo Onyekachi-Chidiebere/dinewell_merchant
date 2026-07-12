@@ -35,6 +35,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSFaceIDUsageDescription</key>
+	<string>DineWell Merchant uses Face ID to securely unlock the app.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string/>
 	<key>UILaunchStoryboardName</key>

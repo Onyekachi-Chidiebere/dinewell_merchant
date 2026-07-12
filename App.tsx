@@ -24,6 +24,9 @@ import GetHelpScreen from './src/screens/GetHelpScreen';
 import { BottomSheetProvider } from './src/context/BottomSheetContext';
 import DynamicBottomSheet from './src/components/DynamicBottomSheet';
 import LegalScreen from './src/screens/LegalScreen';
+import TermsAndConditionsScreen from './src/screens/TermsAndConditionsScreen';
+import PrivacyPolicyScreen from './src/screens/PrivacyPolicyScreen';
+import FaqsScreen from './src/screens/FaqsScreen';
 import {
   TabHomeActiveIcon,
   TabHomeinActiveIcon,
@@ -55,7 +58,8 @@ import { AppProvider, useAppContext } from './src/context/AppContext';
 import { DishProvider } from './src/context/DishContext';
 import { CardProvider } from './src/context/CardContext';
 import { STRIPE_PUBLIC_KEY } from './src/theme/constants';
-import Toast from 'react-native-toast-message'
+import BiometricLockGate from './src/components/BiometricLockGate';
+import Toast from 'react-native-toast-message';
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 import PasswordResetOtp from './src/screens/PasswordResetOtp';
 import ResetPassword from './src/screens/ResetPassword';
@@ -206,6 +210,9 @@ const AppStack = () => {
               <Stack.Screen name="Notifications" component={NotificationsScreen} />
               <Stack.Screen name="GetHelp" component={GetHelpScreen} />
               <Stack.Screen name="Legal" component={LegalScreen} />
+              <Stack.Screen name="TermsAndConditions" component={TermsAndConditionsScreen} />
+              <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+              <Stack.Screen name="Faqs" component={FaqsScreen} />
             </Stack.Navigator>
             <DynamicBottomSheet />
           </BottomSheetProvider>
@@ -217,7 +224,15 @@ const AppStack = () => {
 
 const Root = () => {
   const { user } = useAppContext();
-  return user ? <StripeProvider  publishableKey={STRIPE_PUBLIC_KEY}><AppStack /></StripeProvider> : <AuthWithSignup />;
+  return user ? (
+    <StripeProvider publishableKey={STRIPE_PUBLIC_KEY}>
+      <BiometricLockGate>
+        <AppStack />
+      </BiometricLockGate>
+    </StripeProvider>
+  ) : (
+    <AuthWithSignup />
+  );
 };
 
 const AuthWithSignup = () => (

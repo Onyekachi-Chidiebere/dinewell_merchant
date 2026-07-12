@@ -439,7 +439,6 @@ const styles = StyleSheet.create({
   updateButton: {
     backgroundColor: colors.primary.main,
     paddingHorizontal: 16,
-    paddingVertical: 10,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: '#FEDDDB',
@@ -459,7 +458,6 @@ const styles = StyleSheet.create({
   updateButtonText: {
     fontFamily: 'MavenPro-SemiBold',
     fontSize: 12,
-    lineHeight: 9.6,
     letterSpacing: -0.4,
     color: '#FFFFFF',
     textAlign: 'center',

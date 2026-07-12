@@ -1,8 +1,14 @@
-import React, { useState } from "react";
-import { Text, StyleSheet, SafeAreaView, View, TextInput, TouchableOpacity, Dimensions, KeyboardAvoidingView, Platform, Alert, Pressable } from "react-native";
+import React, { useState, useCallback, useRef } from "react";
+import { Text, StyleSheet, SafeAreaView, View, TextInput, TouchableOpacity, Dimensions, KeyboardAvoidingView, Platform, Pressable, ActivityIndicator } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import LinearGradient from "react-native-linear-gradient";
 import colors from "../theme/colors";
+import { FaceIdIcon } from "../assets/icons";
 import { useAppContext } from "../context/AppContext";
+import {
+  canUseBiometricLogin,
+  getLoginCredentials,
+} from "../services/biometricAuth";
 
 const { width, height } = Dimensions.get("window");
 
@@ -10,11 +16,50 @@ const Login = ({navigation}:any) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login, loginLoading } = useAppContext();
+  const [canBiometricLogin, setCanBiometricLogin] = useState(false);
+  const [biometricLabel, setBiometricLabel] = useState('Biometrics');
+  const hasAutoBiometricLogin = useRef(false);
+
+  const handleBiometricLogin = useCallback(async () => {
+    try {
+      const credentials = await getLoginCredentials(
+        `Sign in to DineWell Merchant with ${biometricLabel}`,
+      );
+      if (!credentials) {
+        return;
+      }
+
+      await login({
+        email: credentials.email,
+        password: credentials.password,
+      });
+    } catch (e) {
+      console.error('Biometric login error:', e);
+    }
+  }, [biometricLabel, login]);
+
+  useFocusEffect(
+    useCallback(() => {
+      hasAutoBiometricLogin.current = false;
+
+      const initBiometricLogin = async () => {
+        const status = await canUseBiometricLogin();
+        setCanBiometricLogin(status.available);
+        setBiometricLabel(status.label);
+
+        if (status.available && !hasAutoBiometricLogin.current) {
+          hasAutoBiometricLogin.current = true;
+          handleBiometricLogin();
+        }
+      };
+
+      initBiometricLogin();
+    }, [handleBiometricLogin]),
+  );
 
   const onLogin = async () => {
     try {
       await login({ email, password });
-      // App navigation will switch automatically via context
     } catch (e) {
     }
   };
@@ -37,6 +82,24 @@ const Login = ({navigation}:any) => {
               <Text style={styles.title}>{"Login\nDetails"}</Text>
             </View>
             <View style={styles.formWrapper}>
+              {canBiometricLogin && (
+                <TouchableOpacity
+                  style={[styles.biometricButton, loginLoading && styles.buttonDisabled]}
+                  activeOpacity={0.8}
+                  onPress={handleBiometricLogin}
+                  disabled={loginLoading}
+                >
+                  {loginLoading ? (
+                    <ActivityIndicator color={colors.primary.main} />
+                  ) : (
+                    <>
+                      <FaceIdIcon width={24} height={24} color={colors.primary.main} />
+                      <Text style={styles.biometricButtonText}>Sign in with {biometricLabel}</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              )}
+
               <TextInput
                 style={styles.input}
                 placeholder="Email"
@@ -93,63 +156,67 @@ const styles = StyleSheet.create({
   outerWrapper: {
     flex: 1,
     justifyContent: "space-between",
+    paddingHorizontal: 24,
+    paddingTop: height * 0.08,
+    paddingBottom: 40,
   },
   headerWrapper: {
-    alignItems: "center",
-    marginTop: height * 0.09, // push title high up
+    marginBottom: 24,
   },
   title: {
-    fontSize: 64,
+    fontSize: 40,
     fontWeight: "700",
-    color: "#454B5E",
-    textAlign: "center",
-    letterSpacing: 0.5,
-    lineHeight: 63,
-    textShadowColor: "rgba(69, 75, 94, 0.18)",
-    textShadowOffset: { width: 0, height: 4 },
-    textShadowRadius: 8,
+    color: "#18181B",
+    lineHeight: 48,
   },
   formWrapper: {
-    alignItems: "center",
-    marginTop: height * 0.04, // large gap after title
+    gap: 16,
   },
   input: {
-    width: width - 40,
-    height: 64,
+    width: width - 48,
     backgroundColor: "#fff",
-    borderRadius: 32,
+    borderRadius: 40,
     borderWidth: 1,
-    borderColor: "#EAD9D1",
-    paddingHorizontal: 28,
-    fontSize: 20,
-    fontStyle: "italic",
-    color: "#454B5E",
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 1,
+    borderColor: "#C4CBF2",
+    paddingVertical: 22,
+    paddingHorizontal: 20,
+    fontSize: 16,
+    color: "#18181B",
   },
   bottomWrapper: {
     alignItems: "center",
-    marginBottom: height * 0.06, // large margin at the bottom
   },
   button: {
-    width: width - 32,
+    width: width - 48,
     backgroundColor: colors.primary.main,
     borderRadius: 40,
     paddingVertical: 22,
     alignItems: "center",
-    shadowColor: "#F6BD87",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    elevation: 4,
   },
   buttonText: {
-    fontSize: 22,
-    fontWeight: "700",
+    fontSize: 16,
+    fontWeight: "600",
     color: "#fff",
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  biometricButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+    width: width - 48,
+    backgroundColor: "#fff",
+    borderRadius: 40,
+    borderWidth: 1,
+    borderColor: "#C4CBF2",
+    paddingVertical: 22,
+    marginBottom: 8,
+  },
+  biometricButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.primary.main,
   },
 });

@@ -3,6 +3,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import useLogin from '../customHooks/useLogin';
 import { io, Socket } from 'socket.io-client';
 import { BACKEND_URL } from '../theme/constants';
+import {
+  isBiometricEnabled,
+  removeLoginCredentials,
+  saveLoginCredentials,
+} from '../services/biometricAuth';
 const AppContext = createContext<any>(null);
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
@@ -46,6 +51,15 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const data = await loginRequest(credentials);
     setUser(data);
     await saveUserToStorage(data);
+
+    if (
+      credentials.email &&
+      credentials.password &&
+      (await isBiometricEnabled())
+    ) {
+      await saveLoginCredentials(credentials.email.trim(), credentials.password);
+    }
+
     return data;
   };
 
@@ -66,6 +80,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setUser(null);
       await removeUserFromStorage();
+      await removeLoginCredentials();
       if (socket) {
         socket.disconnect();
         setSocket(null);
