@@ -14,6 +14,7 @@ export type RootStackParamList = {
   Notifications: undefined;
   GetHelp: undefined;
   Legal: undefined;
+  AboutDineWell: undefined;
   // Add other screen params here as needed
 };
 

@@ -27,6 +27,7 @@ import LegalScreen from './src/screens/LegalScreen';
 import TermsAndConditionsScreen from './src/screens/TermsAndConditionsScreen';
 import PrivacyPolicyScreen from './src/screens/PrivacyPolicyScreen';
 import FaqsScreen from './src/screens/FaqsScreen';
+import AboutDineWellScreen from './src/screens/AboutDineWellScreen';
 import {
   TabHomeActiveIcon,
   TabHomeinActiveIcon,
@@ -213,6 +214,7 @@ const AppStack = () => {
               <Stack.Screen name="TermsAndConditions" component={TermsAndConditionsScreen} />
               <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
               <Stack.Screen name="Faqs" component={FaqsScreen} />
+              <Stack.Screen name="AboutDineWell" component={AboutDineWellScreen} />
             </Stack.Navigator>
             <DynamicBottomSheet />
           </BottomSheetProvider>

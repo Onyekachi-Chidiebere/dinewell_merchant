@@ -21,6 +21,7 @@ type RootStackParamList = {
   Notifications: undefined;
   GetHelp: undefined;
   Legal: undefined;
+  AboutDineWell: undefined;
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -84,7 +85,7 @@ const ProfileScreen = () => {
       id: 6,
       title: 'About Dine Well',
       icon: null,
-      onPress: () => { },
+      onPress: () => navigation.navigate('AboutDineWell'),
     },
   ];
 
