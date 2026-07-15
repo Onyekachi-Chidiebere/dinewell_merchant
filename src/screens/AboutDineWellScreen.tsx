@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -78,9 +79,7 @@ const AboutDineWellScreen = () => {
           <View style={styles.teamGrid}>
             {team.members.map((member) => (
               <View key={member.name} style={styles.teamCard}>
-                <View style={styles.teamAvatar}>
-                  <Text style={styles.teamInitials}>{member.initials}</Text>
-                </View>
+                <Image source={member.image} style={styles.teamAvatar} />
                 <Text style={styles.teamName}>{member.name}</Text>
                 <Text style={styles.teamRole}>{member.role}</Text>
               </View>
@@ -222,18 +221,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   teamAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.background.subtle,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 88,
+    height: 88,
+    borderRadius: 44,
     marginBottom: 10,
-  },
-  teamInitials: {
-    ...typography.subtitle1,
-    color: colors.primary.main,
-    fontWeight: '700',
+    borderWidth: 2,
+    borderColor: colors.border.subtle,
   },
   teamName: {
     ...typography.subtitle2,

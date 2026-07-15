@@ -37,9 +37,21 @@ export const ABOUT_DINEWELL = {
     title: 'Meet the Team',
     subtitle: 'The people building DineWell, one reward at a time.',
     members: [
-      { initials: 'RS', name: 'Rahul Singh', role: 'CEO & Co-Founder' },
-      { initials: 'KM', name: 'Kingsley Michael', role: 'Product Engineer & Co-Founder' },
-      { initials: 'IP', name: 'Ikenna Peterclever', role: 'Product Designer & CTO' },
+      {
+        name: 'Rahul Singh',
+        role: 'CEO & Co-Founder',
+        image: require('../assets/images/team/rahul.png'),
+      },
+      {
+        name: 'Kingsley Michael',
+        role: 'Product Engineer & Co-Founder',
+        image: require('../assets/images/team/kingsley.png'),
+      },
+      {
+        name: 'Ikenna Peterclever',
+        role: 'Product Designer & CTO',
+        image: require('../assets/images/team/peter.png'),
+      },
     ],
   },
   company: 'Dine Well Service Solutions Limited',
