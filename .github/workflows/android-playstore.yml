@@ -72,7 +72,12 @@ jobs:
             echo "Missing secret: ANDROID_KEYSTORE_BASE64"
             exit 1
           fi
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+          echo "$ANDROID_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > android/app/release.keystore
+          if [ ! -s android/app/release.keystore ]; then
+            echo "Decoded keystore is empty — check ANDROID_KEYSTORE_BASE64"
+            exit 1
+          fi
+          ls -la android/app/release.keystore
 
       - name: Configure release signing
         env:
@@ -84,12 +89,15 @@ jobs:
             echo "Missing one or more signing secrets: ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD"
             exit 1
           fi
+          # Remove any existing MYAPP_UPLOAD_* so CI values win over local defaults.
+          sed -i '/^MYAPP_UPLOAD_/d' android/gradle.properties
           {
             echo "MYAPP_UPLOAD_STORE_FILE=release.keystore"
             echo "MYAPP_UPLOAD_KEY_ALIAS=${ANDROID_KEY_ALIAS}"
             echo "MYAPP_UPLOAD_STORE_PASSWORD=${ANDROID_KEYSTORE_PASSWORD}"
             echo "MYAPP_UPLOAD_KEY_PASSWORD=${ANDROID_KEY_PASSWORD}"
           } >> android/gradle.properties
+          echo "Signing config written (store file=release.keystore, alias=${ANDROID_KEY_ALIAS})"
 
       - name: Set Android version code
         run: echo "VERSION_CODE=$((100 + ${{ github.run_number }}))" >> "$GITHUB_ENV"
