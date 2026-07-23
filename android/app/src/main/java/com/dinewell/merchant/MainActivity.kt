@@ -1,4 +1,4 @@
-package com.merchant
+package com.dinewell.merchant
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

@@ -1,4 +1,4 @@
-package com.merchant
+package com.dinewell.merchant
 
 import android.app.Application
 import com.facebook.react.PackageList
