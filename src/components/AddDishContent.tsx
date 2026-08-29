@@ -15,12 +15,22 @@ const AddDishContent = () => {
   const { fields, dishImage, setField, setImage, createDish, loading, reset } = useDishContext();
 
   const pickDishImage = () => {
-    launchImageLibrary({ mediaType: 'photo', quality: 0.7 }, (response) => {
-      if (response.didCancel || response.errorCode) return;
-      if (response.assets && response.assets.length > 0) {
-        setImage(response.assets[0]);
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        quality: 0.55,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        selectionLimit: 1,
+        includeBase64: true,
+      },
+      (response) => {
+        if (response.didCancel || response.errorCode) return;
+        if (response.assets && response.assets.length > 0) {
+          setImage(response.assets[0]);
+        }
       }
-    });
+    );
   };
 
   const onCreate = async () => {
