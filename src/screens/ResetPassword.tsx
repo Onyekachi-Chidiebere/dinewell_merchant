@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Text, StyleSheet, SafeAreaView, View, TextInput, TouchableOpacity, Dimensions, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { Text, StyleSheet, View, TextInput, TouchableOpacity, Dimensions, ActivityIndicator } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import colors from "../theme/colors";
 import axios from "../api/axios";
 import Toast from "react-native-toast-message";
+import KeyboardAwareScreen from "../components/KeyboardAwareScreen";
 
 const { width, height } = Dimensions.get("window");
 
@@ -102,59 +103,52 @@ const ResetPassword = ({navigation, route}:any) => {
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <View style={styles.outerWrapper}>
-            <View style={styles.headerWrapper}>
-              <Text style={styles.title}>{"Reset\nPassword"}</Text>
-            </View>
-            <View style={styles.formWrapper}>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter New Password"
-                placeholderTextColor="#8B8B9A"
-                value={newPassword}
-                onChangeText={setNewPassword}
-                secureTextEntry
-                textContentType="password"
-                autoCorrect={false}
-                autoCapitalize="none"
-              />
+      <KeyboardAwareScreen embed contentContainerStyle={styles.outerWrapper}>
+        <View style={styles.headerWrapper}>
+          <Text style={styles.title}>{"Reset\nPassword"}</Text>
+        </View>
+        <View style={styles.formWrapper}>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter New Password"
+            placeholderTextColor="#8B8B9A"
+            value={newPassword}
+            onChangeText={setNewPassword}
+            secureTextEntry
+            textContentType="password"
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
 
-              <TextInput
-                style={styles.input}
-                placeholder="Confirm New Password"
-                placeholderTextColor="#8B8B9A"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-                textContentType="password"
-                autoCorrect={false}
-                autoCapitalize="none"
-              />
-           
-            </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Confirm New Password"
+            placeholderTextColor="#8B8B9A"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+            textContentType="password"
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
+       
+        </View>
 
-            <View style={styles.bottomWrapper}>
-              <TouchableOpacity 
-                style={[styles.button, resetting && styles.buttonDisabled]} 
-                activeOpacity={0.8} 
-                onPress={handleResetPassword} 
-                disabled={resetting}
-              >
-                {resetting ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Reset Password</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+        <View style={styles.bottomWrapper}>
+          <TouchableOpacity 
+            style={[styles.button, resetting && styles.buttonDisabled]} 
+            activeOpacity={0.8} 
+            onPress={handleResetPassword} 
+            disabled={resetting}
+          >
+            {resetting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Reset Password</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScreen>
     </LinearGradient>
   );
 };
@@ -167,7 +161,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   outerWrapper: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "space-between",
   },
   headerWrapper: {

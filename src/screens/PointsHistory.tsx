@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   TextInput,
   Pressable,
   Modal,
@@ -26,6 +25,7 @@ import CardIcon from '../assets/icons/CardIcon.svg';
 import axios from '../api/axios';
 import { useAppContext } from '../context/AppContext';
 import Toast from 'react-native-toast-message';
+import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
 
 interface Transaction {
   id: number;
@@ -81,7 +81,7 @@ const PointHistoryScreen = () => {
     fetchTransactions();
   }, [user?.id, searchQuery]);
   return (
-    <SafeAreaView style={styles.container}>
+    <KeyboardAwareScreen style={styles.container} scroll={false}>
       <View style={styles.header}>
         <View style={styles.searchContainer}>
           <SearchIcon width={20} height={20} color={colors.text.tertiary} />
@@ -223,7 +223,7 @@ const PointHistoryScreen = () => {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </KeyboardAwareScreen>
   );
 };
 

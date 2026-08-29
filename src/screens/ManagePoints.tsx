@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, ViewStyle, TextInput, Pressable, FlatList, TouchableOpacity, Image, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, Pressable, FlatList, TouchableOpacity, Image, Alert, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors } from '../theme/colors';
 import BackButton from '../components/BackButton';
 import GreyBackground from '../assets/icons/grey-background.svg';
 import typography from '../theme/typography';
 import ChevronDownIcon from '../assets/icons/ChevronDownIcon';
-import ChevronUpDownIcon from '../assets/icons/ChevronUpDownIcon';
 import LinearGradient from 'react-native-linear-gradient';
 import { PointShareIcon as PointsIcon } from '../assets/icons';
 import { ManagePointsNavigationProp } from '../types/navigation';
@@ -16,6 +14,7 @@ import { useBottomSheet } from '../context/BottomSheetContext';
 import { useAppContext } from '../context/AppContext';
 import axios from '../api/axios';
 import Toast from 'react-native-toast-message';
+import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
 
 
 // Define types for order items
@@ -252,12 +251,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView 
-                style={{flex:1}}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-            >
+        <KeyboardAwareScreen style={styles.container} scroll={false}>
             <BackButton style={styles.backBtn} />
             <ScrollView
                 style={styles.scrollView}
@@ -533,8 +527,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
                     </Pressable>
                 </View>
             </View>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+        </KeyboardAwareScreen>
     );
 };
 

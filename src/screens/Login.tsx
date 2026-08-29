@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useRef } from "react";
-import { Text, StyleSheet, SafeAreaView, View, TextInput, TouchableOpacity, Dimensions, KeyboardAvoidingView, Platform, Pressable, ActivityIndicator, Alert } from "react-native";
+import { Text, StyleSheet, View, TextInput, TouchableOpacity, Dimensions, Pressable, ActivityIndicator, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import LinearGradient from "react-native-linear-gradient";
 import colors from "../theme/colors";
 import { FaceIdIcon } from "../assets/icons";
 import { useAppContext } from "../context/AppContext";
 import { useSignupContext } from "../context/SignupContext";
+import KeyboardAwareScreen from "../components/KeyboardAwareScreen";
 import {
   canUseBiometricLogin,
   getLoginCredentials,
@@ -113,69 +114,62 @@ const Login = ({navigation}:any) => {
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <View style={styles.outerWrapper}>
-            <View style={styles.headerWrapper}>
-              <Text style={styles.title}>{"Login\nDetails"}</Text>
-            </View>
-            <View style={styles.formWrapper}>
-              {canBiometricLogin && (
-                <TouchableOpacity
-                  style={[styles.biometricButton, loginLoading && styles.buttonDisabled]}
-                  activeOpacity={0.8}
-                  onPress={handleBiometricLogin}
-                  disabled={loginLoading}
-                >
-                  {loginLoading ? (
-                    <ActivityIndicator color={colors.primary.main} />
-                  ) : (
-                    <>
-                      <FaceIdIcon width={24} height={24} color={colors.primary.main} />
-                      <Text style={styles.biometricButtonText}>Sign in with {biometricLabel}</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
+      <KeyboardAwareScreen embed contentContainerStyle={styles.outerWrapper}>
+        <View style={styles.headerWrapper}>
+          <Text style={styles.title}>{"Login\nDetails"}</Text>
+        </View>
+        <View style={styles.formWrapper}>
+          {canBiometricLogin && (
+            <TouchableOpacity
+              style={[styles.biometricButton, loginLoading && styles.buttonDisabled]}
+              activeOpacity={0.8}
+              onPress={handleBiometricLogin}
+              disabled={loginLoading}
+            >
+              {loginLoading ? (
+                <ActivityIndicator color={colors.primary.main} />
+              ) : (
+                <>
+                  <FaceIdIcon width={24} height={24} color={colors.primary.main} />
+                  <Text style={styles.biometricButtonText}>Sign in with {biometricLabel}</Text>
+                </>
               )}
+            </TouchableOpacity>
+          )}
 
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                placeholderTextColor="#8B8B9A"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                textContentType="emailAddress"
-                autoCorrect={false}
-              />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#8B8B9A"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            autoCorrect={false}
+          />
 
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                placeholderTextColor="#8B8B9A"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                textContentType="password"
-                autoCorrect={false}
-              />
-              <View style={styles.forgotPasswordHolder}>
-                <Pressable onPress={()=>{navigation.navigate('PasswordResetOtp')}}><Text style={styles.forgotPasswordText}>Forgot Passwprd?</Text></Pressable>
-              </View>
-            </View>
-
-            <View style={styles.bottomWrapper}>
-              <TouchableOpacity style={styles.button} activeOpacity={0.8} onPress={onLogin} disabled={loginLoading}>
-                <Text style={styles.buttonText}>{loginLoading ? 'Logging in...' : 'Login'}</Text>
-              </TouchableOpacity>
-            </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#8B8B9A"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            textContentType="password"
+            autoCorrect={false}
+          />
+          <View style={styles.forgotPasswordHolder}>
+            <Pressable onPress={()=>{navigation.navigate('PasswordResetOtp')}}><Text style={styles.forgotPasswordText}>Forgot Passwprd?</Text></Pressable>
           </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+        </View>
+
+        <View style={styles.bottomWrapper}>
+          <TouchableOpacity style={styles.button} activeOpacity={0.8} onPress={onLogin} disabled={loginLoading}>
+            <Text style={styles.buttonText}>{loginLoading ? 'Logging in...' : 'Login'}</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScreen>
     </LinearGradient>
   );
 };
@@ -195,7 +189,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   outerWrapper: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "space-between",
     paddingHorizontal: 24,
     paddingTop: height * 0.08,

@@ -2,19 +2,16 @@ import React from 'react';
 import {
   Text,
   StyleSheet,
-  SafeAreaView,
   View,
   TextInput,
   TouchableOpacity,
   Dimensions,
-  KeyboardAvoidingView,
-  Platform,
   Alert,
-  ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import colors from '../theme/colors';
 import { useSignupContext } from '../context/SignupContext';
+import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
 
 const { width, height } = Dimensions.get('window');
 const titleSize = Math.min(48, width * 0.11);
@@ -101,84 +98,71 @@ const RestaurantDetails = ({ navigation }: { navigation: any }) => {
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
-        >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            bounces={false}
+      <KeyboardAwareScreen embed contentContainerStyle={styles.scrollContent}>
+        <View style={styles.headerWrapper}>
+          <Text style={styles.title}>{'Your\nRestaurant\nDetails'}</Text>
+        </View>
+        <View style={styles.formWrapper}>
+          <TextInput
+            style={styles.input}
+            placeholder="Name of Restaurant"
+            placeholderTextColor="#8B8B9A"
+            value={restaurantDetails.name}
+            onChangeText={(value) => handleRestaurantDetails({ name: 'name', value })}
+            autoCapitalize="words"
+            autoCorrect={false}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Phone Number"
+            placeholderTextColor="#8B8B9A"
+            value={restaurantDetails.phone}
+            onChangeText={(value) => handleRestaurantDetails({ name: 'phone', value })}
+            keyboardType="phone-pad"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#8B8B9A"
+            value={restaurantDetails.email}
+            onChangeText={(value) => handleRestaurantDetails({ name: 'email', value })}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Location eg. Montreal"
+            placeholderTextColor="#8B8B9A"
+            value={restaurantDetails.location}
+            onChangeText={(value) => handleRestaurantDetails({ name: 'location', value })}
+            autoCapitalize="words"
+            autoCorrect={false}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#8B8B9A"
+            value={restaurantDetails.password}
+            onChangeText={(value) => handleRestaurantDetails({ name: 'password', value })}
+            secureTextEntry
+            textContentType="password"
+            autoCorrect={false}
+          />
+        </View>
+        <View style={styles.bottomWrapper}>
+          <TouchableOpacity
+            onPress={handleNext}
+            style={[styles.button, loading && styles.buttonDisabled]}
+            activeOpacity={0.8}
+            disabled={loading}
           >
-            <View style={styles.headerWrapper}>
-              <Text style={styles.title}>{'Your\nRestaurant\nDetails'}</Text>
-            </View>
-            <View style={styles.formWrapper}>
-              <TextInput
-                style={styles.input}
-                placeholder="Name of Restaurant"
-                placeholderTextColor="#8B8B9A"
-                value={restaurantDetails.name}
-                onChangeText={(value) => handleRestaurantDetails({ name: 'name', value })}
-                autoCapitalize="words"
-                autoCorrect={false}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Phone Number"
-                placeholderTextColor="#8B8B9A"
-                value={restaurantDetails.phone}
-                onChangeText={(value) => handleRestaurantDetails({ name: 'phone', value })}
-                keyboardType="phone-pad"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                placeholderTextColor="#8B8B9A"
-                value={restaurantDetails.email}
-                onChangeText={(value) => handleRestaurantDetails({ name: 'email', value })}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Location eg. Montreal"
-                placeholderTextColor="#8B8B9A"
-                value={restaurantDetails.location}
-                onChangeText={(value) => handleRestaurantDetails({ name: 'location', value })}
-                autoCapitalize="words"
-                autoCorrect={false}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                placeholderTextColor="#8B8B9A"
-                value={restaurantDetails.password}
-                onChangeText={(value) => handleRestaurantDetails({ name: 'password', value })}
-                secureTextEntry
-                textContentType="password"
-                autoCorrect={false}
-              />
-            </View>
-            <View style={styles.bottomWrapper}>
-              <TouchableOpacity
-                onPress={handleNext}
-                style={[styles.button, loading && styles.buttonDisabled]}
-                activeOpacity={0.8}
-                disabled={loading}
-              >
-                <Text style={styles.buttonText}>{loading ? 'Loading...' : 'Next'}</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+            <Text style={styles.buttonText}>{loading ? 'Loading...' : 'Next'}</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScreen>
     </LinearGradient>
   );
 };

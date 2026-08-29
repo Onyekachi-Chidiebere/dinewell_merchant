@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Dimensions, Image, Pressable, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSharedValue } from "react-native-reanimated";
 import manage from '../assets/images/manage.png'
 import track from '../assets/images/track.png'
@@ -31,19 +32,19 @@ const data = [
   },
 ];
 const width = Dimensions.get("window").width;
-const height = Dimensions.get("window").height;
 
 function GetStarted({ navigation }: { navigation: any }) {
   const ref = React.useRef<ICarouselInstance>(null);
   const progress = useSharedValue<number>(0);
   const [currentIndex, setCurrentIndex] = React.useState(0);
+  const insets = useSafeAreaInsets();
+  const height = Dimensions.get("window").height;
+  const usableHeight = height - insets.top - insets.bottom;
+  const carouselHeight = Math.min(usableHeight * 0.72, height * 0.75);
+  const imageHeight = Math.min(usableHeight * 0.42, height * 0.45);
 
   const onPressPagination = (index: number) => {
     ref.current?.scrollTo({
-      /**
-       * Calculate the difference between the current index and the target index
-       * to ensure that the carousel scrolls to the nearest index
-       */
       count: index - progress.value,
       animated: true,
     });
@@ -52,19 +53,18 @@ function GetStarted({ navigation }: { navigation: any }) {
 
   const backgroundColors = ['#9B87F6', '#FFE4AB', '#D4FFC4']
   const gradientColors = ['#FFFFFF', '#FFFFFF', backgroundColors[currentIndex]]
-  console.log('selected colors', backgroundColors[0])
   return (
     <LinearGradient
       colors={gradientColors}
       locations={[0, 0.5, 1]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1.2 }}
-      style={{ flex: 1 }}
+      style={{ flex: 1, paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 8) }}
     >
       <Carousel
         ref={ref}
         width={width}
-        height={height * 0.8}
+        height={carouselHeight}
         data={data}
         autoPlay={true}
         autoPlayInterval={3000}
@@ -79,15 +79,15 @@ function GetStarted({ navigation }: { navigation: any }) {
               flex: 1,
             }}
           >
-            <View style={{ width: width, height: height * 0.50, borderBottomEndRadius: 40, borderBottomStartRadius: 40, overflow: "hidden" }}>
+            <View style={{ width: width, height: imageHeight, borderBottomEndRadius: 40, borderBottomStartRadius: 40, overflow: "hidden" }}>
               <Image
                 source={item.image}
                 style={{ width: '100%', height: '100%', objectFit: "cover" }}
               />
             </View>
-            <View style={{ flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
-              <Text style={{ fontSize: 32, fontWeight: "600", marginHorizontal: 20, textAlign: "center" }}>{item.title}</Text>
-              <Text style={{ fontSize: 20, color: colors.text.secondary, marginHorizontal: 40, fontWeight: "400", textAlign: "center", marginVertical: 10 }}>{item.description}</Text>
+            <View style={{ flex: 1, justifyContent: "flex-end", alignItems: "center", paddingBottom: 8 }}>
+              <Text style={{ fontSize: Math.min(28, width * 0.07), fontWeight: "600", marginHorizontal: 20, textAlign: "center" }}>{item.title}</Text>
+              <Text style={{ fontSize: Math.min(16, width * 0.04), color: colors.text.secondary, marginHorizontal: 40, fontWeight: "400", textAlign: "center", marginVertical: 10 }}>{item.description}</Text>
             </View>
           </View>
         )}
@@ -100,8 +100,8 @@ function GetStarted({ navigation }: { navigation: any }) {
         containerStyle={{ gap: 20, marginTop: 10 }}
         onPress={onPressPagination}
       />
-      <Pressable style={{ backgroundColor: colors.background.paper, borderRadius: 40, margin: 40, padding: 15, elevation: 5, shadowColor: colors.text.primary, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84 }} onPress={() => navigation.navigate('Landing')}   >
-        <Text style={{ fontSize: 20, color: colors.text.primary, fontWeight: "400", textAlign: "center" }}>Get Started</Text>
+      <Pressable style={{ backgroundColor: colors.background.paper, borderRadius: 40, marginHorizontal: 24, marginTop: 12, marginBottom: 12, padding: 15, elevation: 5, shadowColor: colors.text.primary, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84 }} onPress={() => navigation.navigate('Landing')}   >
+        <Text style={{ fontSize: 18, color: colors.text.primary, fontWeight: "400", textAlign: "center" }}>Get Started</Text>
       </Pressable>
     </LinearGradient>
   );

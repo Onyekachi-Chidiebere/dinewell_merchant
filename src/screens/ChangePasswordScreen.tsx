@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
   Alert,
   ActivityIndicator,
 } from 'react-native';
@@ -12,11 +11,12 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import colors from '../theme/colors';
 import typography from '../theme/typography';
-import { ArrowLeftIcon, FaceIdIcon, SecurityIcon } from '../assets/icons';
+import { ArrowLeftIcon } from '../assets/icons';
 import FormInput from '../components/FomInput';
 import { useAppContext } from '../context/AppContext';
 import axios from '../api/axios';
 import Toast from 'react-native-toast-message';
+import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
 import {
   isBiometricEnabled,
   saveLoginCredentials,
@@ -126,7 +126,7 @@ const ChangePasswordScreen = () => {
         </View>
       </View>
 
-      <View style={styles.content}>
+      <KeyboardAwareScreen embed contentContainerStyle={styles.content}>
         <View style={styles.form}>
           <View style={styles.formGroup}>
             <Text style={styles.formLabel}>Current Password</Text>
@@ -154,7 +154,7 @@ const ChangePasswordScreen = () => {
             )}
           </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAwareScreen>
     </View>
   );
 };

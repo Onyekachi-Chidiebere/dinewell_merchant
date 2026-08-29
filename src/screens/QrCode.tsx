@@ -58,7 +58,7 @@ const QrCode = ({ route }: { route: { params: { type: string, qrCode:string } } 
                                     value={qrCode}
                                     size={250}
                                 />
-≈ß
+
                             </View>
                             <Text style={styles.subTitle}>How to Issue Points</Text>
 

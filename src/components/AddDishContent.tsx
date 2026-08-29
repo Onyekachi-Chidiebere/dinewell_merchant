@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, Image, KeyboardAvoidingView } from 'react-native';
 import typography from '../theme/typography';
 import colors from '../theme/colors';
 import { useDishContext } from '../context/DishContext';
@@ -61,76 +61,82 @@ const AddDishContent = () => {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <View style={styles.iconCircle}>
-          <LinearGradient
-            style={styles.iconGradient}
-            start={{ x: 0.25, y: 0.25 }}
-            end={{ x: 0.5, y: 2 }}
-            locations={[0, 0.95]}
-            colors={[colors.background.default, colors.border.subtle]}
-          >
-            <PointsIcon width={56} height={56} color={colors.primary.main} />
-          </LinearGradient>
-        </View>
-        <Text style={styles.title}>{isEdit ? 'Edit Dish' : 'To Create A New Dish'}</Text>
-        <Text style={styles.subTitle}>
-          {isEdit ? 'Update the details below' : 'Follow the instructions below'}
-        </Text>
-      </View>
-
-      {!isEdit && (
-        <View style={styles.infoBox}>
-          <Text style={styles.infoBoxTitle}>Instructions</Text>
-          <Text style={styles.infoBoxText}>1. Enter the name of the dish you want to create.</Text>
-          <Text style={styles.infoBoxText}>2. Enter the amount per dish.</Text>
-          <Text style={styles.infoBoxText}>3. Press create dish to complete the process.</Text>
-        </View>
-      )}
-
-      <View style={styles.customInputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Dish Name"
-          placeholderTextColor={colors.text.tertiary}
-          value={fields.dish_name}
-          onChangeText={(v) => setField('dish_name', v)}
-        />
-      </View>
-      <View style={styles.customInputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Price of Dish"
-          placeholderTextColor={colors.text.tertiary}
-          keyboardType="numeric"
-          value={String(fields.price)}
-          onChangeText={(v) => setField('price', v)}
-        />
-      </View>
-
-      <View style={styles.customInputContainer}>
-        {dishImage?.uri ? (
-          <View style={styles.previewRow}>
-            <Image source={{ uri: dishImage.uri }} style={styles.previewImage} />
-            <Text style={styles.input} numberOfLines={1}>
-              {dishImage?.fileName || 'Dish Image'}
-            </Text>
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.header}>
+          <View style={styles.iconCircle}>
+            <LinearGradient
+              style={styles.iconGradient}
+              start={{ x: 0.25, y: 0.25 }}
+              end={{ x: 0.5, y: 2 }}
+              locations={[0, 0.95]}
+              colors={[colors.background.default, colors.border.subtle]}
+            >
+              <PointsIcon width={56} height={56} color={colors.primary.main} />
+            </LinearGradient>
           </View>
-        ) : (
-          <Text style={styles.input}>{dishImage?.fileName || 'Dish Image'}</Text>
-        )}
-        <Pressable onPress={pickDishImage} style={styles.iconContainer}>
-          <ImageIcon />
-        </Pressable>
-      </View>
+          <Text style={styles.title}>{isEdit ? 'Edit Dish' : 'To Create A New Dish'}</Text>
+          <Text style={styles.subTitle}>
+            {isEdit ? 'Update the details below' : 'Follow the instructions below'}
+          </Text>
+        </View>
 
-      <Pressable onPress={onSave} style={styles.createButton} disabled={loading}>
-        <Text style={styles.createText}>
-          {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Dish'}
-        </Text>
-      </Pressable>
-    </ScrollView>
+        {!isEdit && (
+          <View style={styles.infoBox}>
+            <Text style={styles.infoBoxTitle}>Instructions</Text>
+            <Text style={styles.infoBoxText}>1. Enter the name of the dish you want to create.</Text>
+            <Text style={styles.infoBoxText}>2. Enter the amount per dish.</Text>
+            <Text style={styles.infoBoxText}>3. Press create dish to complete the process.</Text>
+          </View>
+        )}
+
+        <View style={styles.customInputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Dish Name"
+            placeholderTextColor={colors.text.tertiary}
+            value={fields.dish_name}
+            onChangeText={(v) => setField('dish_name', v)}
+          />
+        </View>
+        <View style={styles.customInputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Price of Dish"
+            placeholderTextColor={colors.text.tertiary}
+            keyboardType="numeric"
+            value={String(fields.price)}
+            onChangeText={(v) => setField('price', v)}
+          />
+        </View>
+
+        <View style={styles.customInputContainer}>
+          {dishImage?.uri ? (
+            <View style={styles.previewRow}>
+              <Image source={{ uri: dishImage.uri }} style={styles.previewImage} />
+              <Text style={styles.input} numberOfLines={1}>
+                {dishImage?.fileName || 'Dish Image'}
+              </Text>
+            </View>
+          ) : (
+            <Text style={styles.input}>{dishImage?.fileName || 'Dish Image'}</Text>
+          )}
+          <Pressable onPress={pickDishImage} style={styles.iconContainer}>
+            <ImageIcon />
+          </Pressable>
+        </View>
+
+        <Pressable onPress={onSave} style={styles.createButton} disabled={loading}>
+          <Text style={styles.createText}>
+            {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Dish'}
+          </Text>
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

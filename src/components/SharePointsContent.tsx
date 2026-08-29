@@ -7,6 +7,7 @@ import {
   TextInput,
   Platform,
   ScrollView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { StarShareIcon as PointsIcon } from '../assets/icons';
 import colors from '../theme/colors';
@@ -31,7 +32,17 @@ const SharePointsContent = ({ availablePoints, onShare }: Props) => {
   };
 
   return (
-    <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior="padding"
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 24 : 0}
+    >
+    <ScrollView
+      style={styles.scrollView}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+    >
       {/* Icon Circle */}
       <View style={styles.iconCircle}>
         <LinearGradient
@@ -127,10 +138,14 @@ const SharePointsContent = ({ availablePoints, onShare }: Props) => {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   instructionsItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',

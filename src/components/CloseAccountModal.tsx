@@ -6,9 +6,15 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import colors from '../theme/colors';
 import { CloseIcon , CloseAccountIcon} from '../assets/icons';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 type Props = {
   visible: boolean;
@@ -69,69 +75,79 @@ const CloseAccountModal = ({ visible, onClose, onSubmit }: Props) => {
       animationType="fade"
       onRequestClose={handleClose}
     >
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <View style={styles.header}>
-            <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-              <CloseIcon width={24} height={24}  />
-            </TouchableOpacity>
-          </View>
+      <KeyboardAvoidingView
+        style={styles.overlay}
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 24 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={styles.overlayScroll}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.header}>
+              <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                <CloseIcon width={24} height={24}  />
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.content}>
-            <CloseAccountIcon/>
-           
-            <Text style={styles.title}>Close Account</Text>
-            <Text style={styles.description}>
-              This action is irreversible, we would love to know why your deactivating your account.
-            </Text>
-          </View>
+            <View style={styles.content}>
+              <CloseAccountIcon/>
+             
+              <Text style={styles.title}>Close Account</Text>
+              <Text style={styles.description}>
+                This action is irreversible, we would love to know why your deactivating your account.
+              </Text>
+            </View>
 
-          <View style={styles.reasonsContainer}>
-            <View style={styles.divider} />
-            {reasons.map((reason, index) => (
-              <React.Fragment key={reason}>
-                <TouchableOpacity
-                  style={styles.reasonItem}
-                  onPress={() => handleReasonSelect(reason)}
-                >
-                  <View style={[
-                    styles.radioButton,
-                    selectedReason === reason && styles.radioButtonSelected
-                  ]} />
-                  <Text style={styles.reasonText}>{reason}</Text>
-                </TouchableOpacity>
-                {index < reasons.length - 1 && <View style={styles.divider} />}
-              </React.Fragment>
-            ))}
-            {selectedReason === OTHER_REASON && (
-              <TextInput
-                style={styles.otherInput}
-                placeholder="Tell us more..."
-                placeholderTextColor={colors.text.tertiary}
-                value={otherReasonText}
-                onChangeText={setOtherReasonText}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-              />
-            )}
-            <View style={styles.divider} />
-          </View>
+            <View style={styles.reasonsContainer}>
+              <View style={styles.divider} />
+              {reasons.map((reason, index) => (
+                <React.Fragment key={reason}>
+                  <TouchableOpacity
+                    style={styles.reasonItem}
+                    onPress={() => handleReasonSelect(reason)}
+                  >
+                    <View style={[
+                      styles.radioButton,
+                      selectedReason === reason && styles.radioButtonSelected
+                    ]} />
+                    <Text style={styles.reasonText}>{reason}</Text>
+                  </TouchableOpacity>
+                  {index < reasons.length - 1 && <View style={styles.divider} />}
+                </React.Fragment>
+              ))}
+              {selectedReason === OTHER_REASON && (
+                <TextInput
+                  style={styles.otherInput}
+                  placeholder="Tell us more..."
+                  placeholderTextColor={colors.text.tertiary}
+                  value={otherReasonText}
+                  onChangeText={setOtherReasonText}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                />
+              )}
+              <View style={styles.divider} />
+            </View>
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                !canSubmit && styles.submitButtonDisabled
-              ]}
-              onPress={handleSubmit}
-              disabled={!canSubmit}
-            >
-              <Text style={styles.submitButtonText}>Submit Request</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  !canSubmit && styles.submitButtonDisabled
+                ]}
+                onPress={handleSubmit}
+                disabled={!canSubmit}
+              >
+                <Text style={styles.submitButtonText}>Submit Request</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -140,11 +156,16 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  overlayScroll: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 16,
   },
   modalContainer: {
-    width: 375,
+    width: Math.min(375, screenWidth - 32),
     backgroundColor: colors.background.paper,
     borderRadius: 20,
     paddingHorizontal: 10,

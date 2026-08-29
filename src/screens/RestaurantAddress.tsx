@@ -2,19 +2,16 @@ import React, { useEffect } from 'react';
 import {
   Text,
   StyleSheet,
-  SafeAreaView,
   View,
   TextInput,
   TouchableOpacity,
   Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import colors from '../theme/colors';
 import BackButton from '../components/BackButton';
 import { useSignupContext } from '../context/SignupContext';
+import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
 
 const { width, height } = Dimensions.get('window');
 const titleSize = Math.min(48, width * 0.11);
@@ -52,66 +49,53 @@ const RestaurantAddress = ({ navigation, route }: { navigation: any; route?: any
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
-        >
-          <View style={styles.backButtonWrapper}>
-            <BackButton />
-          </View>
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            bounces={false}
+      <KeyboardAwareScreen embed contentContainerStyle={styles.scrollContent}>
+        <View style={styles.backButtonWrapper}>
+          <BackButton />
+        </View>
+        <View style={styles.headerWrapper}>
+          <Text style={styles.title}>{'Your\nAddress'}</Text>
+        </View>
+        <View style={styles.formWrapper}>
+          <TextInput
+            style={styles.input}
+            placeholder="Street Number"
+            placeholderTextColor="#8B8B9A"
+            value={restaurantDetails.streetNumber || ''}
+            onChangeText={(value) => handleRestaurantDetails({ name: 'streetNumber', value })}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Street Name"
+            placeholderTextColor="#8B8B9A"
+            value={restaurantDetails.streetName || ''}
+            onChangeText={(value) => handleRestaurantDetails({ name: 'streetName', value })}
+            autoCapitalize="words"
+            autoCorrect={false}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Area"
+            placeholderTextColor="#8B8B9A"
+            value={restaurantDetails.area || ''}
+            onChangeText={(value) => handleRestaurantDetails({ name: 'area', value })}
+            autoCapitalize="words"
+            autoCorrect={false}
+          />
+        </View>
+        <View style={styles.bottomWrapper}>
+          <TouchableOpacity
+            onPress={handleNext}
+            style={[styles.button, loading && styles.buttonDisabled]}
+            activeOpacity={0.8}
+            disabled={loading}
           >
-            <View style={styles.headerWrapper}>
-              <Text style={styles.title}>{'Your\nAddress'}</Text>
-            </View>
-            <View style={styles.formWrapper}>
-              <TextInput
-                style={styles.input}
-                placeholder="Street Number"
-                placeholderTextColor="#8B8B9A"
-                value={restaurantDetails.streetNumber || ''}
-                onChangeText={(value) => handleRestaurantDetails({ name: 'streetNumber', value })}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Street Name"
-                placeholderTextColor="#8B8B9A"
-                value={restaurantDetails.streetName || ''}
-                onChangeText={(value) => handleRestaurantDetails({ name: 'streetName', value })}
-                autoCapitalize="words"
-                autoCorrect={false}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Area"
-                placeholderTextColor="#8B8B9A"
-                value={restaurantDetails.area || ''}
-                onChangeText={(value) => handleRestaurantDetails({ name: 'area', value })}
-                autoCapitalize="words"
-                autoCorrect={false}
-              />
-            </View>
-            <View style={styles.bottomWrapper}>
-              <TouchableOpacity
-                onPress={handleNext}
-                style={[styles.button, loading && styles.buttonDisabled]}
-                activeOpacity={0.8}
-                disabled={loading}
-              >
-                <Text style={styles.buttonText}>{loading ? 'Loading...' : 'Next'}</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+            <Text style={styles.buttonText}>{loading ? 'Loading...' : 'Next'}</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScreen>
     </LinearGradient>
   );
 };

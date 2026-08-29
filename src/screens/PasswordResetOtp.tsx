@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Text, StyleSheet, SafeAreaView, View, TextInput, TouchableOpacity, Dimensions, KeyboardAvoidingView, Platform, Alert, Pressable, ActivityIndicator } from "react-native";
+import { Text, StyleSheet, View, TextInput, TouchableOpacity, Dimensions, Pressable, ActivityIndicator } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import colors from "../theme/colors";
-import { useAppContext } from "../context/AppContext";
 import axios from "../api/axios";
 import Toast from "react-native-toast-message";
+import KeyboardAwareScreen from "../components/KeyboardAwareScreen";
 
 const { width, height } = Dimensions.get("window");
 
@@ -108,70 +108,63 @@ const PasswordResetOtp = ({navigation, route}:any) => {
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <View style={styles.outerWrapper}>
-            <View style={styles.headerWrapper}>
-              <Text style={styles.title}>{"Verify\nEmail"}</Text>
-            </View>
-            <View style={styles.formWrapper}>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter Email"
-                placeholderTextColor="#8B8B9A"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                textContentType="emailAddress"
-                autoCorrect={false}
-              />
-              <View style={styles.forgotPasswordHolder}>
-                <Pressable 
-                  onPress={handleSendOTP} 
-                  disabled={sendingOTP}
-                  style={sendingOTP && styles.disabledButton}
-                >
-                  {sendingOTP ? (
-                    <ActivityIndicator size="small" color={colors.primary.main} />
-                  ) : (
-                    <Text style={styles.forgotPasswordText}>Get Otp</Text>
-                  )}
-                </Pressable>
-              </View>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter OTP"
-                placeholderTextColor="#8B8B9A"
-                value={otp}
-                onChangeText={setOtp}
-                keyboardType="number-pad"
-                maxLength={5}
-                autoCorrect={false}
-              />
-
-            </View>
-
-            <View style={styles.bottomWrapper}>
-              <TouchableOpacity 
-                style={[styles.button, (verifying || sendingOTP) && styles.buttonDisabled]} 
-                activeOpacity={0.8} 
-                onPress={onSubmit} 
-                disabled={verifying || sendingOTP}
-              >
-                {verifying ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Verify</Text>
-                )}
-              </TouchableOpacity>
-            </View>
+      <KeyboardAwareScreen embed contentContainerStyle={styles.outerWrapper}>
+        <View style={styles.headerWrapper}>
+          <Text style={styles.title}>{"Verify\nEmail"}</Text>
+        </View>
+        <View style={styles.formWrapper}>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter Email"
+            placeholderTextColor="#8B8B9A"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            autoCorrect={false}
+          />
+          <View style={styles.forgotPasswordHolder}>
+            <Pressable 
+              onPress={handleSendOTP} 
+              disabled={sendingOTP}
+              style={sendingOTP && styles.disabledButton}
+            >
+              {sendingOTP ? (
+                <ActivityIndicator size="small" color={colors.primary.main} />
+              ) : (
+                <Text style={styles.forgotPasswordText}>Get Otp</Text>
+              )}
+            </Pressable>
           </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter OTP"
+            placeholderTextColor="#8B8B9A"
+            value={otp}
+            onChangeText={setOtp}
+            keyboardType="number-pad"
+            maxLength={5}
+            autoCorrect={false}
+          />
+
+        </View>
+
+        <View style={styles.bottomWrapper}>
+          <TouchableOpacity 
+            style={[styles.button, (verifying || sendingOTP) && styles.buttonDisabled]} 
+            activeOpacity={0.8} 
+            onPress={onSubmit} 
+            disabled={verifying || sendingOTP}
+          >
+            {verifying ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Verify</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScreen>
     </LinearGradient>
   );
 };
@@ -191,7 +184,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   outerWrapper: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "space-between",
   },
   headerWrapper: {

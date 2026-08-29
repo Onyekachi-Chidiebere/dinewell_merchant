@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   Dimensions,
-  SafeAreaView,
   Pressable,
   Image,
   ScrollView,
@@ -19,6 +18,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import BackButton from '../components/BackButton';
 import { useSignupContext } from '../context/SignupContext';
 import { launchImageLibrary } from 'react-native-image-picker';
+import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
 
 const { width, height } = Dimensions.get('window');
 const titleSize = Math.min(48, width * 0.11);
@@ -119,108 +119,101 @@ const RestaurantPictures = ({ navigation, route }: { navigation: any; route?: an
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={{ flex: 1 }}>
+      <KeyboardAwareScreen embed contentContainerStyle={styles.scrollContent}>
         <View style={styles.backButtonWrapper}>
           <BackButton />
           <Pressable onPress={handleSkip} hitSlop={12}>
             <Text style={styles.skipText}>Skip</Text>
           </Pressable>
         </View>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-        >
-          <View style={styles.headerWrapper}>
-            <Text style={styles.title}>{'Your\nPictures'}</Text>
-            <Text style={styles.merchantIdHint}>
-              merchantId: {String(routeMerchantId ?? merchantId ?? 'not set yet')}
-            </Text>
-          </View>
-          <View style={styles.formWrapper}>
-            <View style={styles.logoInputWrapper}>
-              <TextInput
-                style={styles.logoInput}
-                placeholder="Logo"
-                placeholderTextColor="#AEB5C3"
-                value={
-                  restaurantDetails.logo?.fileName && restaurantDetails.logo?.uri
-                    ? restaurantDetails.logo.fileName
-                    : ''
-                }
-                editable={false}
-              />
-              <TouchableOpacity style={styles.logoIconWrapper} activeOpacity={0.7} onPress={pickLogo}>
-                {restaurantDetails.logo?.uri ? (
-                  <Image source={{ uri: restaurantDetails.logo.uri }} style={styles.logoImage} />
-                ) : (
-                  <PictureIcon width={ICON_SIZE} height={ICON_SIZE} />
-                )}
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.picturesSection}>
-              <Text style={styles.picturesLabel}>Restaurant Pictures</Text>
-              <View style={styles.picturesRow}>
-                {[0, 1, 2, 3].map((i) => (
-                  <TouchableOpacity
-                    key={i}
-                    style={styles.pictureCircle}
-                    activeOpacity={0.7}
-                    onPress={() => pickPictureAtIndex(i)}
-                  >
-                    {restaurantDetails.images?.[i]?.uri ? (
-                      <Image
-                        source={{ uri: restaurantDetails.images[i].uri }}
-                        style={styles.pictureImage}
-                      />
-                    ) : (
-                      <PictureIcon width={ICON_SIZE} height={ICON_SIZE} />
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <View style={styles.helperWrapper}>
-                <Text style={styles.helperText}>
-                  These should be pictures from inside and outside your restaurant
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {!!uploadDebugError && (
-            <View style={styles.debugPanel}>
-              <View style={styles.debugHeader}>
-                <Text style={styles.debugTitle}>Test mode — upload error</Text>
-                <Pressable onPress={clearUploadDebugError} hitSlop={10}>
-                  <Text style={styles.debugDismiss}>Dismiss</Text>
-                </Pressable>
-              </View>
-              <ScrollView
-                style={styles.debugScroll}
-                nestedScrollEnabled
-                showsVerticalScrollIndicator
-              >
-                <Text selectable style={styles.debugText}>
-                  {uploadDebugError}
-                </Text>
-              </ScrollView>
-            </View>
-          )}
-
-          <View style={styles.bottomWrapper}>
-            <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              activeOpacity={0.8}
-              onPress={handleNext}
-              disabled={loading}
-            >
-              <Text style={styles.buttonText}>{loading ? 'Uploading...' : 'Next'}</Text>
+        <View style={styles.headerWrapper}>
+          <Text style={styles.title}>{'Your\nPictures'}</Text>
+          <Text style={styles.merchantIdHint}>
+            merchantId: {String(routeMerchantId ?? merchantId ?? 'not set yet')}
+          </Text>
+        </View>
+        <View style={styles.formWrapper}>
+          <View style={styles.logoInputWrapper}>
+            <TextInput
+              style={styles.logoInput}
+              placeholder="Logo"
+              placeholderTextColor="#AEB5C3"
+              value={
+                restaurantDetails.logo?.fileName && restaurantDetails.logo?.uri
+                  ? restaurantDetails.logo.fileName
+                  : ''
+              }
+              editable={false}
+            />
+            <TouchableOpacity style={styles.logoIconWrapper} activeOpacity={0.7} onPress={pickLogo}>
+              {restaurantDetails.logo?.uri ? (
+                <Image source={{ uri: restaurantDetails.logo.uri }} style={styles.logoImage} />
+              ) : (
+                <PictureIcon width={ICON_SIZE} height={ICON_SIZE} />
+              )}
             </TouchableOpacity>
           </View>
-        </ScrollView>
-      </SafeAreaView>
+
+          <View style={styles.picturesSection}>
+            <Text style={styles.picturesLabel}>Restaurant Pictures</Text>
+            <View style={styles.picturesRow}>
+              {[0, 1, 2, 3].map((i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={styles.pictureCircle}
+                  activeOpacity={0.7}
+                  onPress={() => pickPictureAtIndex(i)}
+                >
+                  {restaurantDetails.images?.[i]?.uri ? (
+                    <Image
+                      source={{ uri: restaurantDetails.images[i].uri }}
+                      style={styles.pictureImage}
+                    />
+                  ) : (
+                    <PictureIcon width={ICON_SIZE} height={ICON_SIZE} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View style={styles.helperWrapper}>
+              <Text style={styles.helperText}>
+                These should be pictures from inside and outside your restaurant
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {!!uploadDebugError && (
+          <View style={styles.debugPanel}>
+            <View style={styles.debugHeader}>
+              <Text style={styles.debugTitle}>Test mode — upload error</Text>
+              <Pressable onPress={clearUploadDebugError} hitSlop={10}>
+                <Text style={styles.debugDismiss}>Dismiss</Text>
+              </Pressable>
+            </View>
+            <ScrollView
+              style={styles.debugScroll}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator
+            >
+              <Text selectable style={styles.debugText}>
+                {uploadDebugError}
+              </Text>
+            </ScrollView>
+          </View>
+        )}
+
+        <View style={styles.bottomWrapper}>
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            activeOpacity={0.8}
+            onPress={handleNext}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>{loading ? 'Uploading...' : 'Next'}</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScreen>
     </LinearGradient>
   );
 };

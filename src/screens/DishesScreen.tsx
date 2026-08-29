@@ -6,7 +6,6 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Pressable,
   Modal,
@@ -19,6 +18,7 @@ import typography from '../theme/typography';
 import GreyBackground from '../assets/icons/grey-background.svg';
 import AddIcon from '../assets/icons/add.svg';
 import { useDishContext } from '../context/DishContext';
+import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
 
 
 const DishesScreen = () => {
@@ -69,7 +69,7 @@ const DishesScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <KeyboardAwareScreen style={styles.container} scroll={false}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background.paper} />
 
       {/* Header */}
@@ -203,7 +203,7 @@ const DishesScreen = () => {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </KeyboardAwareScreen>
   );
 };
 

@@ -1,21 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TextInput, Pressable, Modal } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, Modal } from 'react-native';
 import { colors } from '../theme/colors';
 import BackButton from '../components/BackButton';
 import GreyBackground from '../assets/icons/grey-background.svg';
 import typography, { fontFamily } from '../theme/typography';
 import ChevronDownIcon from '../assets/icons/ChevronDownIcon';
 import ChevronUpDownIcon from '../assets/icons/ChevronUpDownIcon';
+import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
 
 
 const Topup = () => {
     const [type, setType] = useState('bundles');
     const [visible, setVisible] = useState(false);
     return (
-        <SafeAreaView style={styles.container}>
-            <View
-                style={styles.scrollContainer}
-            >
+        <KeyboardAwareScreen style={styles.container} contentContainerStyle={styles.scrollContainer}>
                 <BackButton />
                 <View style={styles.typeContainer}>
                     <Pressable onPress={() => setType('bundles')} style={type === 'bundles' ? styles.typeButtonActive : styles.typeButtonInactive}>
@@ -127,7 +125,6 @@ const Topup = () => {
                         </Pressable>
 
                     </View>}
-            </View>
             <Modal
                 visible={visible}
                 transparent
@@ -186,7 +183,7 @@ const Topup = () => {
                     </View>
                 </View>
             </Modal>
-        </SafeAreaView>
+        </KeyboardAwareScreen>
     );
 };
 

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TextInput,
   TouchableOpacity,
   Image,
@@ -15,6 +14,7 @@ import { SearchIcon, CloseIcon, WarningIcon } from '../assets/icons';
 import GradientCard from '../components/GradientCard';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
 
 type ExploreStackParamList = {
   ExploreMain: undefined;
@@ -33,7 +33,7 @@ const RestaurantDiscoveryScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <KeyboardAwareScreen style={styles.container} scroll={false}>
       {/* Map Image */}
       <Image
         source={require('../assets/images/map.png')}
@@ -82,7 +82,7 @@ const RestaurantDiscoveryScreen = () => {
         </View>
 
       </View>
-    </SafeAreaView>
+    </KeyboardAwareScreen>
   );
 };
 

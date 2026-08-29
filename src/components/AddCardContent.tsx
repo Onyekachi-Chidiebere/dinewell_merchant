@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Dimensions, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Dimensions, Alert, ScrollView, KeyboardAvoidingView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useCardContext } from '../context/CardContext';
 import { CardField } from '@stripe/stripe-react-native';
@@ -26,56 +26,62 @@ const AddCardContent = ({ onNext }: { onNext?: () => void }) => {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Card Preview */}
-      <View style={styles.previewWrapper}>
-        <View style={styles.previewCard}>
-          <View style={styles.topBand}>
-            <Text style={styles.brandText}>Dine<Text style={{ color: '#F59E0B' }}>Well</Text></Text>
-          </View>
-          <LinearGradient
-            colors={["#E25520", "#D28F0D"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.bottomBand}
-          >
-            <Text style={styles.maskedNumber}>——— ———— ————</Text>
-            <View style={styles.previewBottomRow}>
-              <View>
-                <Text style={styles.previewLabel}>Expiry Date</Text>
-                <Text style={styles.previewValue}>DD/MM</Text>
-              </View>
-              <View style={{ flex: 1 }} />
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={styles.previewLabel}>CVV</Text>
-                <Text style={styles.previewValue}>***</Text>
-              </View>
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Card Preview */}
+        <View style={styles.previewWrapper}>
+          <View style={styles.previewCard}>
+            <View style={styles.topBand}>
+              <Text style={styles.brandText}>Dine<Text style={{ color: '#F59E0B' }}>Well</Text></Text>
             </View>
-          </LinearGradient>
+            <LinearGradient
+              colors={["#E25520", "#D28F0D"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.bottomBand}
+            >
+              <Text style={styles.maskedNumber}>——— ———— ————</Text>
+              <View style={styles.previewBottomRow}>
+                <View>
+                  <Text style={styles.previewLabel}>Expiry Date</Text>
+                  <Text style={styles.previewValue}>DD/MM</Text>
+                </View>
+                <View style={{ flex: 1 }} />
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={styles.previewLabel}>CVV</Text>
+                  <Text style={styles.previewValue}>***</Text>
+                </View>
+              </View>
+            </LinearGradient>
+          </View>
         </View>
-      </View>
 
-      {/* Title */}
-      <Text style={styles.title}>New Card</Text>
+        {/* Title */}
+        <Text style={styles.title}>New Card</Text>
 
-      {/* Stripe Card Element */}
-      <CardField
-        postalCodeEnabled={false}
-        style={styles.cardField}
-        placeholders={{ number: 'Card Number' }}
-        cardStyle={{
-          backgroundColor: '#FFFFFF',
-          placeholderColor: '#8B8B9A',
-          textColor: '#454B5E',
-          borderRadius: 32,
-        }}
-      />
+        {/* Stripe Card Element */}
+        <CardField
+          postalCodeEnabled={false}
+          style={styles.cardField}
+          placeholders={{ number: 'Card Number' }}
+          cardStyle={{
+            backgroundColor: '#FFFFFF',
+            placeholderColor: '#8B8B9A',
+            textColor: '#454B5E',
+            borderRadius: 32,
+          }}
+        />
 
-      {/* Button */}
-      <Pressable style={styles.button} onPress={handleNext} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? 'Saving…' : 'Next'}</Text>
-      </Pressable>
-    </ScrollView>
+        {/* Button */}
+        <Pressable style={styles.button} onPress={handleNext} disabled={loading}>
+          <Text style={styles.buttonText}>{loading ? 'Saving…' : 'Next'}</Text>
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

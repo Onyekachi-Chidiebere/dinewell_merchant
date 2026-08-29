@@ -10,7 +10,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { View, Text } from 'react-native';
 import HomeScreen from './src/screens/HomeScreen';
@@ -73,14 +73,16 @@ const INACTIVE_LABEL_COLOR = '#828DA9';
 
 
 const AppContent = () => {
+  const insets = useSafeAreaInsets();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarStyle: {
-          height: 84,
+          height: 56 + Math.max(insets.bottom, 10),
           backgroundColor: '#fff',
           borderTopWidth: 0,
-          paddingTop: 10,
+          paddingBottom: Math.max(insets.bottom, 10),
+          paddingTop: 6,
           // Shadow only on the top
           ...Platform.select({
             ios: {

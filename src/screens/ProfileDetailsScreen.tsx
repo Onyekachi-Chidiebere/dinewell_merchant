@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   Image,
   TextInput,
   Modal,
@@ -16,10 +15,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { launchImageLibrary, ImagePickerResponse, MediaType } from 'react-native-image-picker';
 import colors from '../theme/colors';
 import typography from '../theme/typography';
-import { ArrowLeftIcon, CalendarIcon, ChevronDownIcon } from '../assets/icons';
+import { ArrowLeftIcon } from '../assets/icons';
 import { useAppContext } from '../context/AppContext';
 import useMerchant from '../customHooks/useMerchant';
 import Toast from 'react-native-toast-message';
+import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
 
 type RootStackParamList = {
   Profile: undefined;
@@ -184,7 +184,7 @@ const ProfileDetailsScreen = () => {
         </View>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScreen embed contentContainerStyle={styles.content}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Profile Picture</Text>
           <View style={styles.profilePictureContainer}>
@@ -293,7 +293,7 @@ const ProfileDetailsScreen = () => {
             </View>
           </View>
         </Modal>
-      </ScrollView>
+      </KeyboardAwareScreen>
     </View>
   );
 };
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: 16,
     paddingTop: 16,
   },
