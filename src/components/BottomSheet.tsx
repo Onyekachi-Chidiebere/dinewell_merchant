@@ -29,10 +29,12 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   height = MAX_HEIGHT,
 }) => {
   const [slideAnim] = useState(new Animated.Value(SCREEN_HEIGHT));
-  const [isClosing, setIsClosing] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const panY = useRef(new Animated.Value(0)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const isClosingRef = useRef(false);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   const resetSheet = useCallback(() => {
     Animated.spring(panY, {
@@ -44,39 +46,50 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     }).start();
   }, [panY]);
 
-  const closeSheet = useCallback(() => {
-    setIsClosing(true);
-    Animated.parallel([
-      Animated.spring(slideAnim, {
-        toValue: SCREEN_HEIGHT,
-        useNativeDriver: true,
-        damping: 15,
-        mass: 1,
-        stiffness: 100,
-      }),
-      Animated.timing(backdropOpacity, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      })
-    ]).start(() => {
-      setIsClosing(false);
-      setShouldRender(false);
-      onClose();
-    });
-  }, [slideAnim, backdropOpacity, onClose]);
+  const animateClosed = useCallback(
+    (notifyParent: boolean) => {
+      if (isClosingRef.current) return;
+      isClosingRef.current = true;
+
+      Animated.parallel([
+        Animated.spring(slideAnim, {
+          toValue: SCREEN_HEIGHT,
+          useNativeDriver: true,
+          damping: 15,
+          mass: 1,
+          stiffness: 100,
+        }),
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        isClosingRef.current = false;
+        setShouldRender(false);
+        panY.setValue(0);
+        if (notifyParent) {
+          onCloseRef.current();
+        }
+      });
+    },
+    [slideAnim, backdropOpacity, panY]
+  );
+
+  // Backdrop / swipe close — animate then tell parent
+  const requestClose = useCallback(() => {
+    animateClosed(true);
+  }, [animateClosed]);
 
   useEffect(() => {
     if (visible) {
-      if (!shouldRender) {
-        setShouldRender(true);
-      }
-      
-      setTimeout(() => {
-        slideAnim.setValue(SCREEN_HEIGHT);
-        panY.setValue(0);
-        backdropOpacity.setValue(0);
-        
+      isClosingRef.current = false;
+      setShouldRender(true);
+      slideAnim.setValue(SCREEN_HEIGHT);
+      panY.setValue(0);
+      backdropOpacity.setValue(0);
+
+      const timer = setTimeout(() => {
         Animated.parallel([
           Animated.spring(slideAnim, {
             toValue: 0,
@@ -89,12 +102,19 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             toValue: 1,
             duration: 150,
             useNativeDriver: true,
-          })
+          }),
         ]).start();
         resetSheet();
-      }, 50);
+      }, 16);
+
+      return () => clearTimeout(timer);
     }
-  }, [visible, resetSheet, slideAnim, backdropOpacity, panY]);
+
+    // Parent set visible=false — animate out without calling onClose again
+    if (shouldRender) {
+      animateClosed(false);
+    }
+  }, [visible]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -102,12 +122,12 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
       onPanResponderMove: (_, gestureState) => {
         const newY = Math.max(0, gestureState.dy);
         panY.setValue(newY);
-        const opacity = Math.max(0, 1 - (newY / (SCREEN_HEIGHT * 0.3)));
+        const opacity = Math.max(0, 1 - newY / (SCREEN_HEIGHT * 0.3));
         backdropOpacity.setValue(opacity);
       },
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dy > 100 || gestureState.vy > 0.5) {
-          closeSheet();
+          requestClose();
         } else {
           resetSheet();
           Animated.timing(backdropOpacity, {
@@ -123,42 +143,26 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   if (!shouldRender) return null;
 
   return (
-    <Animated.View 
-      style={[
-        styles.overlay,
-        { opacity: backdropOpacity }
-      ]} 
-      pointerEvents="auto"
-    >
+    <Animated.View style={[styles.overlay, { opacity: backdropOpacity }]} pointerEvents="auto">
       <Animated.View style={styles.backdrop}>
-        <TouchableOpacity
-          style={styles.backdropTouchable}
-          onPress={closeSheet}
-          activeOpacity={1}
-        />
+        <TouchableOpacity style={styles.backdropTouchable} onPress={requestClose} activeOpacity={1} />
       </Animated.View>
       <Animated.View
         style={[
           styles.container,
           {
-            height: height === 'auto' ? 'auto' : Math.min(height, MAX_HEIGHT),
+            height: height === 'auto' ? 'auto' : Math.min(height as number, MAX_HEIGHT),
             maxHeight: MAX_HEIGHT,
             borderTopLeftRadius: borderRadius,
             borderTopRightRadius: borderRadius,
-            transform: [
-              { translateY: slideAnim },
-              { translateY: panY }
-            ]
-          }
+            transform: [{ translateY: slideAnim }, { translateY: panY }],
+          },
         ]}
       >
         <View style={styles.handleContainer} {...panResponder.panHandlers}>
           <View style={styles.handle} />
         </View>
-
-        <View style={styles.contentContainer}>
-          {children}
-        </View>
+        <View style={styles.contentContainer}>{children}</View>
       </Animated.View>
     </Animated.View>
   );
@@ -211,4 +215,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BottomSheet; 
+export default BottomSheet;

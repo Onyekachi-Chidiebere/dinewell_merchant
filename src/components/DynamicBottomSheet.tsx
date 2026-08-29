@@ -72,23 +72,21 @@ const DynamicBottomSheet: React.FC = () => {
   };
 
   const renderContent = () => {
-    if (!sheetData) return null;
-
     switch (activeSheet) {
+      case 'dish':
+        return <AddDishContent />;
+      case 'card':
+        return <AddCardContent />;
       case 'home':
-        if (isPointsData(sheetData)) {
+        if (sheetData && isPointsData(sheetData)) {
           return <HomeViewSheet pointsData={sheetData} />;
         }
         return null;
       case 'sharePoints':
-        if (isSharePointsData(sheetData)) {
+        if (sheetData && isSharePointsData(sheetData)) {
           return <SharePointsContent {...sheetData} />;
         }
         return null;
-      case 'dish':
-        return <AddDishContent  />;
-      case 'card':
-        return <AddCardContent />;
       default:
         return null;
     }

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 
 type BottomSheetType = 'home' | 'restaurant' | 'sharePoints' | 'dish' |'card';
 
@@ -71,8 +71,13 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [visible, setVisible] = useState(false);
   const [activeSheet, setActiveSheet] = useState<BottomSheetType | null>(null);
   const [sheetData, setSheetData] = useState<PointsData | RestaurantData | SharePointsData | DishSheetData | null>(null);
+  const clearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const openSheet = useCallback((type: BottomSheetType, data: PointsData | RestaurantData | SharePointsData | DishSheetData) => {
+    if (clearTimeoutRef.current) {
+      clearTimeout(clearTimeoutRef.current);
+      clearTimeoutRef.current = null;
+    }
     setSheetData(data);
     setActiveSheet(type);
     setVisible(true);
@@ -80,10 +85,15 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const closeSheet = useCallback(() => {
     setVisible(false);
-    setTimeout(() => {
+    if (clearTimeoutRef.current) {
+      clearTimeout(clearTimeoutRef.current);
+    }
+    // Keep content mounted until the close animation finishes
+    clearTimeoutRef.current = setTimeout(() => {
       setActiveSheet(null);
       setSheetData(null);
-    }, 100); // Clear data after animation completes
+      clearTimeoutRef.current = null;
+    }, 350);
   }, []);
 
   return (

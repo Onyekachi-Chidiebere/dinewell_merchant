@@ -36,9 +36,10 @@ const AddDishContent = () => {
   const onCreate = async () => {
     try {
       await createDish();
-      reset(); // Reset form after successful creation
       closeSheet();
-    } catch (e) { }
+      // Reset after sheet is gone so the form doesn't flash blank while closing
+      setTimeout(() => reset(), 400);
+    } catch (e) {}
   };
 
   return (
