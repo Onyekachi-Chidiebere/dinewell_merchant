@@ -1,35 +1,81 @@
-import React from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity,Alert, Dimensions, SafeAreaView, Pressable, Image } from "react-native";
-import colors from "../theme/colors";
-import PictureIcon from "../assets/icons/picture.svg";
-import LinearGradient from "react-native-linear-gradient";
-import BackButton from "../components/BackButton";
+import React, { useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Dimensions,
+  SafeAreaView,
+  Pressable,
+  Image,
+  ScrollView,
+  Alert,
+  Platform,
+} from 'react-native';
+import colors from '../theme/colors';
+import PictureIcon from '../assets/icons/picture.svg';
+import LinearGradient from 'react-native-linear-gradient';
+import BackButton from '../components/BackButton';
 import { useSignupContext } from '../context/SignupContext';
 import { launchImageLibrary } from 'react-native-image-picker';
 
-const { width, height } = Dimensions.get("window");
-
+const { width, height } = Dimensions.get('window');
+const titleSize = Math.min(48, width * 0.11);
 const ICON_SIZE = 32;
-const PICTURE_SIZE = 64;
+const PICTURE_SIZE = Math.min(64, (width - 80) / 4);
 
-const RestaurantPictures = ({ navigation }: { navigation: any }) => {
-  const { restaurantDetails, handleLogoPick, handleAddPicture, submitPictures, loading } = useSignupContext();
+const RestaurantPictures = ({ navigation, route }: { navigation: any; route?: any }) => {
+  const {
+    restaurantDetails,
+    handleLogoPick,
+    handleAddPicture,
+    submitPictures,
+    skipPictures,
+    ensureMerchantId,
+    merchantId,
+    loading,
+    uploadDebugError,
+    clearUploadDebugError,
+  } = useSignupContext();
+  const routeMerchantId = route?.params?.merchantId;
 
-  // Pick image for logo
-  const pickLogo = async () => {
-    launchImageLibrary({ mediaType: 'photo', quality: 0.7 }, (response) => {
-      if (response.didCancel || response.errorCode) return;
-      if (response.assets && response.assets.length > 0) {
+  useEffect(() => {
+    ensureMerchantId(routeMerchantId);
+  }, [routeMerchantId, ensureMerchantId]);
+
+  const pickerOptions = {
+    mediaType: 'photo' as const,
+    quality: 0.55,
+    maxWidth: 1024,
+    maxHeight: 1024,
+    selectionLimit: 1,
+    includeBase64: true,
+  };
+
+  const pickLogo = () => {
+    launchImageLibrary(pickerOptions, (response) => {
+      if (response.didCancel || response.errorCode) {
+        if (response.errorMessage) {
+          Alert.alert('Image picker', response.errorMessage);
+        }
+        return;
+      }
+      if (response.assets?.[0]) {
         handleLogoPick(response.assets[0]);
       }
     });
   };
 
-  // Pick image for restaurant pictures at index
-  const pickPictureAtIndex = (index:any) => {
-    launchImageLibrary({ mediaType: 'photo', quality: 0.7 }, (response) => {
-      if (response.didCancel || response.errorCode) return;
-      if (response.assets && response.assets.length > 0) {
+  const pickPictureAtIndex = (index: number) => {
+    launchImageLibrary(pickerOptions, (response) => {
+      if (response.didCancel || response.errorCode) {
+        if (response.errorMessage) {
+          Alert.alert('Image picker', response.errorMessage);
+        }
+        return;
+      }
+      if (response.assets?.[0]) {
         handleAddPicture(index, response.assets[0]);
       }
     });
@@ -37,56 +83,98 @@ const RestaurantPictures = ({ navigation }: { navigation: any }) => {
 
   const handleNext = async () => {
     try {
-      await submitPictures();
-      
+      await submitPictures(routeMerchantId ?? merchantId);
       navigation.navigate('Login');
     } catch (err) {
-      Alert.alert('Failed to upload pictures. Please try again.');
+      // Debug panel stays on screen
     }
+  };
+
+  const handleSkip = () => {
+    Alert.alert(
+      'Skip pictures?',
+      'Your account will be finished without pictures. You can add them later from your profile.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Skip',
+          onPress: async () => {
+            try {
+              await skipPictures(routeMerchantId ?? merchantId);
+              navigation.navigate('Login');
+            } catch (err) {
+              // Toast already shown — stay on this screen
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
     <LinearGradient
-      colors={["#F6BD87", "#FFF6ED", "#FFFFFF"]}
+      colors={['#F6BD87', '#FFF6ED', '#FFFFFF']}
       locations={[0, 0.45, 1]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={styles.container}
     >
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.backButtonWrapper}><BackButton/>
-          <Pressable><Text>Skip</Text></Pressable>
+        <View style={styles.backButtonWrapper}>
+          <BackButton />
+          <Pressable onPress={handleSkip} hitSlop={12}>
+            <Text style={styles.skipText}>Skip</Text>
+          </Pressable>
         </View>
-        <View style={styles.outerWrapper}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
           <View style={styles.headerWrapper}>
-            <Text style={styles.title}>{"Your\nPictures"}</Text>
+            <Text style={styles.title}>{'Your\nPictures'}</Text>
+            <Text style={styles.merchantIdHint}>
+              merchantId: {String(routeMerchantId ?? merchantId ?? 'not set yet')}
+            </Text>
           </View>
           <View style={styles.formWrapper}>
-            {/* Logo Input */}
             <View style={styles.logoInputWrapper}>
               <TextInput
                 style={styles.logoInput}
                 placeholder="Logo"
                 placeholderTextColor="#AEB5C3"
-                value={restaurantDetails.logo && restaurantDetails.logo.fileName ? restaurantDetails.logo.fileName : ''}
+                value={
+                  restaurantDetails.logo?.fileName && restaurantDetails.logo?.uri
+                    ? restaurantDetails.logo.fileName
+                    : ''
+                }
                 editable={false}
               />
               <TouchableOpacity style={styles.logoIconWrapper} activeOpacity={0.7} onPress={pickLogo}>
-                {restaurantDetails.logo && restaurantDetails.logo.uri ? (
+                {restaurantDetails.logo?.uri ? (
                   <Image source={{ uri: restaurantDetails.logo.uri }} style={styles.logoImage} />
                 ) : (
                   <PictureIcon width={ICON_SIZE} height={ICON_SIZE} />
                 )}
               </TouchableOpacity>
             </View>
-            {/* Restaurant Pictures Section */}
+
             <View style={styles.picturesSection}>
               <Text style={styles.picturesLabel}>Restaurant Pictures</Text>
               <View style={styles.picturesRow}>
                 {[0, 1, 2, 3].map((i) => (
-                  <TouchableOpacity key={i} style={styles.pictureCircle} activeOpacity={0.7} onPress={() => pickPictureAtIndex(i)}>
-                    {restaurantDetails.images && restaurantDetails.images[i] && restaurantDetails.images[i].uri ? (
-                      <Image source={{ uri: restaurantDetails.images[i].uri }} style={styles.pictureImage} />
+                  <TouchableOpacity
+                    key={i}
+                    style={styles.pictureCircle}
+                    activeOpacity={0.7}
+                    onPress={() => pickPictureAtIndex(i)}
+                  >
+                    {restaurantDetails.images?.[i]?.uri ? (
+                      <Image
+                        source={{ uri: restaurantDetails.images[i].uri }}
+                        style={styles.pictureImage}
+                      />
                     ) : (
                       <PictureIcon width={ICON_SIZE} height={ICON_SIZE} />
                     )}
@@ -100,12 +188,38 @@ const RestaurantPictures = ({ navigation }: { navigation: any }) => {
               </View>
             </View>
           </View>
+
+          {!!uploadDebugError && (
+            <View style={styles.debugPanel}>
+              <View style={styles.debugHeader}>
+                <Text style={styles.debugTitle}>Test mode — upload error</Text>
+                <Pressable onPress={clearUploadDebugError} hitSlop={10}>
+                  <Text style={styles.debugDismiss}>Dismiss</Text>
+                </Pressable>
+              </View>
+              <ScrollView
+                style={styles.debugScroll}
+                nestedScrollEnabled
+                showsVerticalScrollIndicator
+              >
+                <Text selectable style={styles.debugText}>
+                  {uploadDebugError}
+                </Text>
+              </ScrollView>
+            </View>
+          )}
+
           <View style={styles.bottomWrapper}>
-            <TouchableOpacity style={styles.button} activeOpacity={0.8} onPress={handleNext} disabled={loading}>
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              activeOpacity={0.8}
+              onPress={handleNext}
+              disabled={loading}
+            >
               <Text style={styles.buttonText}>{loading ? 'Uploading...' : 'Next'}</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -115,146 +229,202 @@ export default RestaurantPictures;
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 64,
-    fontWeight: "700",
-    color: "#454B5E",
-    textAlign: "center",
+    fontSize: titleSize,
+    fontWeight: '700',
+    color: '#454B5E',
+    textAlign: 'center',
     letterSpacing: 0.5,
-    lineHeight: 63,
-    textShadowColor: "rgba(69, 75, 94, 0.18)",
+    lineHeight: titleSize + 4,
+    textShadowColor: 'rgba(69, 75, 94, 0.18)',
     textShadowOffset: { width: 0, height: 4 },
     textShadowRadius: 8,
   },
   headerWrapper: {
-    alignItems: "center",
-    marginTop: height * 0.09, // push title high up
+    alignItems: 'center',
+    marginTop: Math.min(height * 0.04, 32),
+    paddingHorizontal: 16,
   },
-  backButtonWrapper:{
-    flexDirection:'row',
-    justifyContent:'space-between',
-    alignItems:'center',
+  merchantIdHint: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  backButtonWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 8,
+  },
+  skipText: {
+    fontSize: 16,
+    color: '#454B5E',
+    fontWeight: '600',
   },
   container: {
     flex: 1,
   },
-  outerWrapper: {
-    flex: 1,
-    justifyContent: "space-between",
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    paddingBottom: 24,
   },
   formWrapper: {
-    marginTop: 32,
-    alignItems: "center",
+    marginTop: 24,
+    alignItems: 'center',
+    paddingHorizontal: 16,
   },
   logoInputWrapper: {
     width: width - 32,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: 32,
     borderWidth: 1,
-    borderColor: "#C4CBF2",
-    marginBottom: 24,
-    position: "relative",
-    height: 64,
+    borderColor: '#C4CBF2',
+    marginBottom: 20,
+    position: 'relative',
+    height: 56,
+    backgroundColor: '#fff',
   },
   logoInput: {
     flex: 1,
-    height: 64,
+    height: 56,
     paddingLeft: 24,
     paddingRight: 56,
-    fontSize: 20,
-    fontStyle: "italic",
-    color: "#454B5E",
-    backgroundColor: "transparent",
+    fontSize: 17,
+    fontStyle: 'italic',
+    color: '#454B5E',
+    backgroundColor: 'transparent',
   },
   logoIconWrapper: {
-    position: "absolute",
+    position: 'absolute',
     right: 0,
-    height: 64,
-    width: 64,
+    height: 56,
+    width: 56,
     borderTopRightRadius: 32,
     borderBottomRightRadius: 32,
     borderLeftWidth: 1,
-    borderLeftColor: "#C4CBF2",
-    justifyContent: "center",
-    alignItems: "center",
+    borderLeftColor: '#C4CBF2',
+    justifyContent: 'center',
+    alignItems: 'center',
     overflow: 'hidden',
   },
   logoImage: {
-    width: ICON_SIZE,
-    height: ICON_SIZE,
-    borderRadius: ICON_SIZE / 2,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     resizeMode: 'cover',
   },
   picturesSection: {
     width: width - 32,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#C4CBF2",
+    borderColor: '#C4CBF2',
     padding: 16,
-    marginBottom: 32,
+    marginBottom: 24,
+    backgroundColor: 'rgba(255,255,255,0.55)',
   },
   picturesLabel: {
-    fontSize: 18,
-    fontStyle: "italic",
-    color: "#8B8B9A",
+    fontSize: 16,
+    fontStyle: 'italic',
+    color: '#8B8B9A',
     marginBottom: 12,
   },
   picturesRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 12,
-    paddingHorizontal: 4,
+    gap: 8,
   },
   pictureCircle: {
     width: PICTURE_SIZE,
     height: PICTURE_SIZE,
     borderRadius: PICTURE_SIZE / 2,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderWidth: 2,
-    borderColor: "#C4CBF2",
-    justifyContent: "center",
-    alignItems: "center",
+    borderColor: '#C4CBF2',
+    justifyContent: 'center',
+    alignItems: 'center',
     overflow: 'hidden',
   },
   pictureImage: {
-    width: PICTURE_SIZE - 8,
-    height: PICTURE_SIZE - 8,
-    borderRadius: (PICTURE_SIZE - 8) / 2,
+    width: '100%',
+    height: '100%',
     resizeMode: 'cover',
   },
   helperWrapper: {
-    backgroundColor: "#F1F4FA",
+    backgroundColor: '#F1F4FA',
     borderRadius: 16,
     padding: 8,
     marginTop: 4,
   },
   helperText: {
-    fontSize: 15,
-    color: "#8B8B9A",
-    fontWeight: "400",
+    fontSize: 14,
+    color: '#8B8B9A',
+    fontWeight: '400',
+  },
+  debugPanel: {
+    width: width - 32,
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 12,
+    backgroundColor: '#1F2937',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#F87171',
+    padding: 12,
+    maxHeight: Math.min(280, height * 0.35),
+  },
+  debugHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  debugTitle: {
+    color: '#FCA5A5',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  debugDismiss: {
+    color: '#93C5FD',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  debugScroll: {
+    maxHeight: Math.min(220, height * 0.28),
+  },
+  debugText: {
+    color: '#E5E7EB',
+    fontSize: 11,
+    lineHeight: 16,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   bottomWrapper: {
-    alignItems: "center",
-    marginBottom: 32,
+    alignItems: 'center',
+    marginTop: 12,
+    marginBottom: 16,
   },
   button: {
     width: width - 32,
     backgroundColor: colors.primary.main,
     borderRadius: 40,
-    paddingVertical: 22,
-    alignItems: "center",
-    shadowColor: "#F6BD87",
+    paddingVertical: 18,
+    alignItems: 'center',
+    shadowColor: '#F6BD87',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.18,
     shadowRadius: 24,
     elevation: 4,
   },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
   buttonText: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#fff",
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#fff',
   },
 });

@@ -1,39 +1,62 @@
 import React from "react";
-import { Text, StyleSheet, SafeAreaView, View, TouchableOpacity, Dimensions } from "react-native";
+import {
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  View,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
 import LinearGradient from "react-native-linear-gradient";
-import colors from "../theme/colors";
+import { useSignupContext } from "../context/SignupContext";
 
 const { width } = Dimensions.get("window");
 
 const Landing = ({ navigation }: { navigation: any }) => {
-    return (
-        <LinearGradient
-            colors={["#F6BD87", "#FFF6ED", "#FFFFFF"]}
-            locations={[0, 0.45, 1]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-            style={styles.container}
-        >
-            <SafeAreaView style={{ flex: 1 }}>
-                <View style={styles.contentWrapper}>
-                    <Text style={styles.welcomeText}>Welcome to</Text>
-                    <Text style={styles.logoText}>
-                        Dine
-                        <Text style={styles.logoTextWell}>Well</Text>
-                    </Text>
-                </View>
-                <View style={styles.bottomWrapper}>
-                    <Text style={styles.subText}>Sign Up/Login below</Text>
-                    <TouchableOpacity onPress={()=>navigation.navigate('RestaurantDetails')} style={styles.button} activeOpacity={0.8}>
-                        <Text style={styles.buttonText}>Sign up to Dine Well</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={()=>navigation.navigate('Login')} style={styles.button} activeOpacity={0.8}>
-                        <Text style={styles.buttonText}>Log In to Dine Well</Text>
-                    </TouchableOpacity>
-                </View>
-            </SafeAreaView>
-        </LinearGradient>
-    );
+  const { startFreshSignup } = useSignupContext();
+
+  const handleSignUp = async () => {
+    // Always start a blank signup — never force resume of a previous draft
+    await startFreshSignup();
+    navigation.navigate("RestaurantDetails");
+  };
+
+  return (
+    <LinearGradient
+      colors={["#F6BD87", "#FFF6ED", "#FFFFFF"]}
+      locations={[0, 0.45, 1]}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+      style={styles.container}
+    >
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.contentWrapper}>
+          <Text style={styles.welcomeText}>Welcome to</Text>
+          <Text style={styles.logoText}>
+            Dine
+            <Text style={styles.logoTextWell}>Well</Text>
+          </Text>
+        </View>
+        <View style={styles.bottomWrapper}>
+          <Text style={styles.subText}>Sign Up/Login below</Text>
+          <TouchableOpacity
+            onPress={handleSignUp}
+            style={styles.button}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buttonText}>Sign up to Dine Well</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Login")}
+            style={styles.button}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buttonText}>Log In to Dine Well</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </LinearGradient>
+  );
 };
 
 export default Landing;
@@ -92,6 +115,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 2,
+    minHeight: 68,
+    justifyContent: "center",
   },
   buttonText: {
     fontSize: 16,

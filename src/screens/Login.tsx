@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useRef } from "react";
-import { Text, StyleSheet, SafeAreaView, View, TextInput, TouchableOpacity, Dimensions, KeyboardAvoidingView, Platform, Pressable, ActivityIndicator } from "react-native";
+import { Text, StyleSheet, SafeAreaView, View, TextInput, TouchableOpacity, Dimensions, KeyboardAvoidingView, Platform, Pressable, ActivityIndicator, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import LinearGradient from "react-native-linear-gradient";
 import colors from "../theme/colors";
 import { FaceIdIcon } from "../assets/icons";
 import { useAppContext } from "../context/AppContext";
+import { useSignupContext } from "../context/SignupContext";
 import {
   canUseBiometricLogin,
   getLoginCredentials,
@@ -16,9 +17,42 @@ const Login = ({navigation}:any) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login, loginLoading } = useAppContext();
+  const { applySignupProgress } = useSignupContext();
   const [canBiometricLogin, setCanBiometricLogin] = useState(false);
   const [biometricLabel, setBiometricLabel] = useState('Biometrics');
   const hasAutoBiometricLogin = useRef(false);
+
+  const continueIncompleteSignup = useCallback(
+    async (err, credentials) => {
+      if (err?.code !== 'SIGNUP_INCOMPLETE' || !err.signupProgress) {
+        return false;
+      }
+      Alert.alert(
+        'Unfinished signup',
+        'This email has an incomplete signup. Continue where you left off?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Continue',
+            onPress: async () => {
+              try {
+                const nextScreen = await applySignupProgress(err.signupProgress, {
+                  password: credentials?.password || '',
+                });
+                navigation.navigate(nextScreen || 'RestaurantDetails', {
+                  merchantId: err.signupProgress.merchantId,
+                });
+              } catch {
+                // stay on login
+              }
+            },
+          },
+        ]
+      );
+      return true;
+    },
+    [applySignupProgress, navigation]
+  );
 
   const handleBiometricLogin = useCallback(async () => {
     try {
@@ -34,9 +68,15 @@ const Login = ({navigation}:any) => {
         password: credentials.password,
       });
     } catch (e) {
-      console.error('Biometric login error:', e);
+      const handled = await continueIncompleteSignup(e, {
+        email,
+        password,
+      });
+      if (!handled) {
+        console.error('Biometric login error:', e);
+      }
     }
-  }, [biometricLabel, login]);
+  }, [biometricLabel, login, continueIncompleteSignup, email, password]);
 
   useFocusEffect(
     useCallback(() => {
@@ -61,6 +101,7 @@ const Login = ({navigation}:any) => {
     try {
       await login({ email, password });
     } catch (e) {
+      await continueIncompleteSignup(e, { email, password });
     }
   };
 

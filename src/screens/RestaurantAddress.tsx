@@ -1,27 +1,52 @@
-import React from "react";
-import { Text, StyleSheet, SafeAreaView, View,Alert, TextInput, TouchableOpacity, Dimensions, KeyboardAvoidingView, Platform } from "react-native";
-import LinearGradient from "react-native-linear-gradient";
-import colors from "../theme/colors";
-import BackButton from "../components/BackButton";
+import React, { useEffect } from 'react';
+import {
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import colors from '../theme/colors';
+import BackButton from '../components/BackButton';
 import { useSignupContext } from '../context/SignupContext';
 
-const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get('window');
+const titleSize = Math.min(48, width * 0.11);
 
-const RestaurantAddress = ({ navigation }: { navigation: any }) => {
-  const { restaurantDetails, handleRestaurantDetails, submitAddress, loading } = useSignupContext();
+const RestaurantAddress = ({ navigation, route }: { navigation: any; route?: any }) => {
+  const {
+    restaurantDetails,
+    handleRestaurantDetails,
+    submitAddress,
+    ensureMerchantId,
+    loading,
+  } = useSignupContext();
+  const routeMerchantId = route?.params?.merchantId;
+
+  useEffect(() => {
+    ensureMerchantId(routeMerchantId);
+  }, [routeMerchantId, ensureMerchantId]);
 
   const handleNext = async () => {
     try {
-      await submitAddress();
-      navigation.navigate('RestaurantPictures');
+      const result = await submitAddress(routeMerchantId);
+      navigation.navigate('RestaurantPictures', {
+        merchantId: result?.merchantId ?? routeMerchantId,
+      });
     } catch (err) {
-      Alert.alert('Failed to submit address. Please try again.');
+      // Toast already shown in hook
     }
   };
 
   return (
     <LinearGradient
-      colors={["#F6BD87", "#FFF6ED", "#FFFFFF"]}
+      colors={['#F6BD87', '#FFF6ED', '#FFFFFF']}
       locations={[0, 0.45, 1]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
@@ -30,12 +55,20 @@ const RestaurantAddress = ({ navigation }: { navigation: any }) => {
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
         >
-          <View style={styles.backButtonWrapper}><BackButton/></View>
-          <View style={styles.outerWrapper}>
+          <View style={styles.backButtonWrapper}>
+            <BackButton />
+          </View>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+          >
             <View style={styles.headerWrapper}>
-              <Text style={styles.title}>{"Your\nAddress"}</Text>
+              <Text style={styles.title}>{'Your\nAddress'}</Text>
             </View>
             <View style={styles.formWrapper}>
               <TextInput
@@ -43,7 +76,7 @@ const RestaurantAddress = ({ navigation }: { navigation: any }) => {
                 placeholder="Street Number"
                 placeholderTextColor="#8B8B9A"
                 value={restaurantDetails.streetNumber || ''}
-                onChangeText={value => handleRestaurantDetails({ name: 'streetNumber', value })}
+                onChangeText={(value) => handleRestaurantDetails({ name: 'streetNumber', value })}
                 autoCapitalize="none"
                 autoCorrect={false}
               />
@@ -52,8 +85,8 @@ const RestaurantAddress = ({ navigation }: { navigation: any }) => {
                 placeholder="Street Name"
                 placeholderTextColor="#8B8B9A"
                 value={restaurantDetails.streetName || ''}
-                onChangeText={value => handleRestaurantDetails({ name: 'streetName', value })}
-                autoCapitalize="none"
+                onChangeText={(value) => handleRestaurantDetails({ name: 'streetName', value })}
+                autoCapitalize="words"
                 autoCorrect={false}
               />
               <TextInput
@@ -61,17 +94,22 @@ const RestaurantAddress = ({ navigation }: { navigation: any }) => {
                 placeholder="Area"
                 placeholderTextColor="#8B8B9A"
                 value={restaurantDetails.area || ''}
-                onChangeText={value => handleRestaurantDetails({ name: 'area', value })}
-                autoCapitalize="none"
+                onChangeText={(value) => handleRestaurantDetails({ name: 'area', value })}
+                autoCapitalize="words"
                 autoCorrect={false}
               />
             </View>
             <View style={styles.bottomWrapper}>
-              <TouchableOpacity onPress={handleNext} style={styles.button} activeOpacity={0.8} disabled={loading}>
+              <TouchableOpacity
+                onPress={handleNext}
+                style={[styles.button, loading && styles.buttonDisabled]}
+                activeOpacity={0.8}
+                disabled={loading}
+              >
                 <Text style={styles.buttonText}>{loading ? 'Loading...' : 'Next'}</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
@@ -81,76 +119,83 @@ const RestaurantAddress = ({ navigation }: { navigation: any }) => {
 export default RestaurantAddress;
 
 const styles = StyleSheet.create({
-  backButtonWrapper:{
-    flexDirection:'row',
-    justifyContent:'space-between',
-    alignItems:'center',
+  backButtonWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 8,
   },
   container: {
     flex: 1,
   },
-  outerWrapper: {
-    flex: 1,
-    justifyContent: "space-between",
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    paddingBottom: 24,
   },
   headerWrapper: {
-    alignItems: "center",
-    marginTop: height * 0.09, // push title high up
+    alignItems: 'center',
+    marginTop: Math.min(height * 0.05, 40),
+    paddingHorizontal: 16,
   },
   title: {
-    fontSize: 64,
-    fontWeight: "700",
-    color: "#454B5E",
-    textAlign: "center",
+    fontSize: titleSize,
+    fontWeight: '700',
+    color: '#454B5E',
+    textAlign: 'center',
     letterSpacing: 0.5,
-    lineHeight: 63,
-    textShadowColor: "rgba(69, 75, 94, 0.18)",
+    lineHeight: titleSize + 4,
+    textShadowColor: 'rgba(69, 75, 94, 0.18)',
     textShadowOffset: { width: 0, height: 4 },
     textShadowRadius: 8,
   },
   formWrapper: {
-    alignItems: "center",
-    marginTop: height * 0.04, // large gap after title
+    alignItems: 'center',
+    marginTop: 20,
+    paddingHorizontal: 16,
   },
   input: {
     width: width - 40,
-    height: 64,
-    backgroundColor: "#fff",
-    borderRadius: 32,
+    minHeight: 56,
+    backgroundColor: '#fff',
+    borderRadius: 28,
     borderWidth: 1,
-    borderColor: "#EAD9D1",
-    paddingHorizontal: 28,
-    fontSize: 20,
-    fontStyle: "italic",
-    color: "#454B5E",
-    marginBottom: 12,
-    shadowColor: "#000",
+    borderColor: '#EAD9D1',
+    paddingHorizontal: 24,
+    fontSize: 17,
+    fontStyle: 'italic',
+    color: '#454B5E',
+    marginBottom: 10,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
     shadowRadius: 6,
     elevation: 1,
   },
   bottomWrapper: {
-    alignItems: "center",
-    marginBottom: height * 0.06, // large margin at the bottom
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 16,
   },
   button: {
     width: width - 32,
     backgroundColor: colors.primary.main,
     borderRadius: 40,
-    paddingVertical: 22,
-    alignItems: "center",
-    shadowColor: "#F6BD87",
+    paddingVertical: 18,
+    alignItems: 'center',
+    shadowColor: '#F6BD87',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.18,
     shadowRadius: 24,
     elevation: 4,
   },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
   buttonText: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#fff",
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#fff',
   },
 });
