@@ -37,7 +37,8 @@ interface SharePointsData {
 }
 
 interface DishSheetData {
-  // placeholder for any prefilled data; can be empty for create
+  mode?: 'create' | 'edit';
+  dish?: any;
 }
 interface CardSheetData {
   // placeholder for any prefilled data; can be empty for create

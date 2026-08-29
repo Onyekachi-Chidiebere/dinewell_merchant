@@ -1,8 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, ScrollView } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, Image } from 'react-native';
 import typography from '../theme/typography';
 import colors from '../theme/colors';
-import GreyBackground from '../assets/icons/grey-background.svg';
 import { useDishContext } from '../context/DishContext';
 import { useBottomSheet } from '../context/BottomSheetContext';
 import { launchImageLibrary } from 'react-native-image-picker';
@@ -11,8 +10,28 @@ import { PointShareIcon as PointsIcon } from '../assets/icons';
 import ImageIcon from '../assets/icons/image-icon.svg';
 
 const AddDishContent = () => {
-  const { closeSheet } = useBottomSheet();
-  const { fields, dishImage, setField, setImage, createDish, loading, reset } = useDishContext();
+  const { closeSheet, sheetData } = useBottomSheet();
+  const {
+    fields,
+    dishImage,
+    setField,
+    setImage,
+    saveDish,
+    loading,
+    reset,
+    loadDishForEdit,
+    editingDishId,
+  } = useDishContext();
+
+  const isEdit = sheetData?.mode === 'edit' || !!editingDishId;
+
+  useEffect(() => {
+    if (sheetData?.mode === 'edit' && sheetData?.dish) {
+      loadDishForEdit(sheetData.dish);
+    } else if (sheetData?.mode !== 'edit') {
+      reset();
+    }
+  }, [sheetData?.mode, sheetData?.dish?.id]);
 
   const pickDishImage = () => {
     launchImageLibrary(
@@ -33,17 +52,16 @@ const AddDishContent = () => {
     );
   };
 
-  const onCreate = async () => {
+  const onSave = async () => {
     try {
-      await createDish();
+      await saveDish();
       closeSheet();
-      // Reset after sheet is gone so the form doesn't flash blank while closing
       setTimeout(() => reset(), 400);
     } catch (e) {}
   };
 
   return (
-    <ScrollView style={styles.container}  showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View style={styles.iconCircle}>
           <LinearGradient
@@ -56,22 +74,21 @@ const AddDishContent = () => {
             <PointsIcon width={56} height={56} color={colors.primary.main} />
           </LinearGradient>
         </View>
-        <Text style={styles.title}>To Create A New Dish</Text>
-        <Text style={styles.subTitle}>Follow the instructions below</Text>
+        <Text style={styles.title}>{isEdit ? 'Edit Dish' : 'To Create A New Dish'}</Text>
+        <Text style={styles.subTitle}>
+          {isEdit ? 'Update the details below' : 'Follow the instructions below'}
+        </Text>
       </View>
 
-      <View style={styles.infoBox}>
-        <Text style={styles.infoBoxTitle}>Instructions</Text>
-        <Text style={styles.infoBoxText}>
-          1. Enter the name of the dish you want to create.
-        </Text>
-        <Text style={styles.infoBoxText}>
-          2. Enter the amount per dish.
-        </Text>
-        <Text style={styles.infoBoxText}>
-          3. Press create dish to complete the process.
-        </Text>
-      </View>
+      {!isEdit && (
+        <View style={styles.infoBox}>
+          <Text style={styles.infoBoxTitle}>Instructions</Text>
+          <Text style={styles.infoBoxText}>1. Enter the name of the dish you want to create.</Text>
+          <Text style={styles.infoBoxText}>2. Enter the amount per dish.</Text>
+          <Text style={styles.infoBoxText}>3. Press create dish to complete the process.</Text>
+        </View>
+      )}
+
       <View style={styles.customInputContainer}>
         <TextInput
           style={styles.input}
@@ -82,7 +99,6 @@ const AddDishContent = () => {
         />
       </View>
       <View style={styles.customInputContainer}>
-
         <TextInput
           style={styles.input}
           placeholder="Price of Dish"
@@ -92,17 +108,27 @@ const AddDishContent = () => {
           onChangeText={(v) => setField('price', v)}
         />
       </View>
-      
+
       <View style={styles.customInputContainer}>
-        <Text style={styles.input}>{dishImage?.fileName || 'Dish Image'}</Text>
+        {dishImage?.uri ? (
+          <View style={styles.previewRow}>
+            <Image source={{ uri: dishImage.uri }} style={styles.previewImage} />
+            <Text style={styles.input} numberOfLines={1}>
+              {dishImage?.fileName || 'Dish Image'}
+            </Text>
+          </View>
+        ) : (
+          <Text style={styles.input}>{dishImage?.fileName || 'Dish Image'}</Text>
+        )}
         <Pressable onPress={pickDishImage} style={styles.iconContainer}>
           <ImageIcon />
         </Pressable>
       </View>
-      
 
-      <Pressable onPress={onCreate} style={styles.createButton} disabled={loading}>
-        <Text style={styles.createText}>{loading ? 'Creating...' : 'Create Dish'}</Text>
+      <Pressable onPress={onSave} style={styles.createButton} disabled={loading}>
+        <Text style={styles.createText}>
+          {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Dish'}
+        </Text>
       </Pressable>
     </ScrollView>
   );
@@ -116,13 +142,23 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.border.fade,
     marginLeft: 10,
   },
+  previewRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  previewImage: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+  },
   title: {
     fontSize: 16,
     fontWeight: '400',
     color: colors.text.primary,
     textTransform: 'capitalize',
     letterSpacing: -1,
-
   },
   container: { padding: 16 },
   infoBox: {
@@ -130,7 +166,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 12,
     padding: 12,
-    // marginHorizontal: 16,
     marginBottom: 3,
     borderWidth: 0.6,
     borderColor: colors.border.subtle,
@@ -147,7 +182,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginTop: 8,
   },
-
   iconCircle: {
     alignSelf: 'center',
     width: 72,
@@ -181,7 +215,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     marginTop: 12,
     paddingHorizontal: 24,
-    // marginHorizontal: 16,
   },
   input: {
     flex: 1,
@@ -189,30 +222,14 @@ const styles = StyleSheet.create({
     ...typography.body1,
     color: colors.text.primary,
   },
-  basePointsRow: {
-    flexDirection: 'row',
+  createButton: {
+    marginTop: 10,
+    backgroundColor: colors.primary.main,
+    padding: 16,
+    borderRadius: 40,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.background.subtle,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    overflow: 'hidden',
-    marginBottom: 12,
+    marginBottom: 20,
   },
-  baseBg: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
-  baseLabel: { color: colors.text.secondary, fontWeight: 'bold' },
-  baseInput: {
-    borderWidth: 1,
-    borderColor: colors.border.default,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    minWidth: 60,
-    textAlign: 'right',
-    backgroundColor: colors.background.paper,
-  },
-  createButton: { marginTop:10,backgroundColor: colors.primary.main, padding: 16, borderRadius: 40, alignItems: 'center', marginBottom:20 },
   createText: { color: colors.text.white, fontWeight: '700' },
 });
 

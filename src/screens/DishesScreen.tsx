@@ -25,14 +25,48 @@ const DishesScreen = () => {
   const { openDishSheet } = useBottomSheet();
 
   const [dishDetails, setDishDetails] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const { dishes, fetchDishes,activeDishes, searchQuery, setSearchQuery} = useDishContext();
+  const {
+    dishes,
+    fetchDishes,
+    activeDishes,
+    searchQuery,
+    setSearchQuery,
+    pauseDish,
+    resumeDish,
+    loading,
+  } = useDishContext();
 
   React.useEffect(() => {
     fetchDishes();
   }, [searchQuery]);
 
-  const openCreateDish = () => openDishSheet({ });
+  const openCreateDish = () => openDishSheet({ mode: 'create' });
+
+  const isPaused = (dishDetails?.status || 'active') === 'paused';
+
+  const handlePauseToggle = async () => {
+    if (!dishDetails?.id || actionLoading) return;
+    setActionLoading(true);
+    try {
+      const updated = isPaused
+        ? await resumeDish(dishDetails.id)
+        : await pauseDish(dishDetails.id);
+      setDishDetails(updated);
+    } catch (e) {
+      // toast already shown
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleEdit = () => {
+    if (!dishDetails) return;
+    const dish = dishDetails;
+    setDishDetails(null);
+    openDishSheet({ mode: 'edit', dish });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -68,43 +102,46 @@ const DishesScreen = () => {
       </View>
 
       <ScrollView style={styles.content}>
-        {dishes.map((dish: any) => (
-          <TouchableOpacity
-            key={dish.id}
-          >
-            <View style={styles.restaurantCard} >
-              <View style={styles.restaurantInfo}>
-                <View style={styles.restaurantHeader}>
-                  <View style={styles.logoContainer}>
-                    <Image source={{ uri: dish.dish_image_url }} style={styles.logo} />
-                    <View style={styles.nameContainer}>
-                      <Text style={styles.restaurantName}>{dish.dish_name}</Text>
+        {dishes.map((dish: any) => {
+          const paused = (dish.status || 'active') === 'paused';
+          return (
+            <TouchableOpacity key={dish.id}>
+              <View style={[styles.restaurantCard, paused && styles.pausedCard]}>
+                <View style={styles.restaurantInfo}>
+                  <View style={styles.restaurantHeader}>
+                    <View style={styles.logoContainer}>
+                      <Image source={{ uri: dish.dish_image_url }} style={styles.logo} />
+                      <View style={styles.nameContainer}>
+                        <Text style={styles.restaurantName}>{dish.dish_name}</Text>
+                        {paused && <Text style={styles.pausedBadge}>Paused</Text>}
+                      </View>
+                    </View>
+                    <View style={styles.dishPriceContainer}>
+                      <Text style={styles.dishPrice}>
+                        ${dish.price} <Text>per Dish</Text>
+                      </Text>
                     </View>
                   </View>
-                  <View style={styles.dishPriceContainer}>
-                    <Text style={styles.dishPrice}>${dish.price} <Text>per Dish</Text></Text>
-                  </View>
-                </View>
-                <View style={styles.dishStatsContainer}>
-                  <View style={styles.statsContainer}>
-                    <View style={styles.stat}>
-                      <Text style={styles.distanceText}>{dish.points_per_dollar || 0}pts/$</Text>
+                  <View style={styles.dishStatsContainer}>
+                    <View style={styles.statsContainer}>
+                      <View style={styles.stat}>
+                        <Text style={styles.distanceText}>{dish.points_per_dollar || 0}pts/$</Text>
+                      </View>
+                      <View style={styles.divider} />
+                      <View style={styles.stat}>
+                        <Text style={styles.pointsText}>{dish.base_points_per_dish || 0}</Text>
+                        <Text style={styles.statLabel}>Base Points</Text>
+                      </View>
                     </View>
-                    <View style={styles.divider} />
-                    <View style={styles.stat}>
-                      <Text style={styles.pointsText}>{dish.base_points_per_dish || 0}</Text>
-                      <Text style={styles.statLabel}>Base Points</Text>
-                    </View>
-
+                    <Pressable onPress={() => setDishDetails(dish)} style={styles.viewButton}>
+                      <Text style={styles.viewButtonText}>View</Text>
+                    </Pressable>
                   </View>
-                  <Pressable onPress={() => setDishDetails(dish)} style={styles.viewButton}>
-                    <Text style={styles.viewButtonText}>View</Text>
-                  </Pressable>
                 </View>
               </View>
-            </View>
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
       <Modal
         visible={dishDetails !== null}
@@ -135,14 +172,30 @@ const DishesScreen = () => {
               </View>
               <View style={styles.statusSection}>
                 <Text style={styles.dishInfoLabel}>Status</Text>
-                <Text style={styles.statusValue}>Active</Text>
+                <Text style={[styles.statusValue, isPaused && styles.statusPaused]}>
+                  {isPaused ? 'Paused' : 'Active'}
+                </Text>
               </View>
 
               <View style={styles.modalActions}>
-                <Pressable style={styles.pauseButton}>
-                  <Text style={styles.pauseButtonText}>Pause Dish</Text>
+                <Pressable
+                  style={styles.pauseButton}
+                  onPress={handlePauseToggle}
+                  disabled={actionLoading || loading}
+                >
+                  <Text style={styles.pauseButtonText}>
+                    {actionLoading
+                      ? 'Updating...'
+                      : isPaused
+                        ? 'Resume Dish'
+                        : 'Pause Dish'}
+                  </Text>
                 </Pressable>
-                <Pressable style={styles.editButton}>
+                <Pressable
+                  style={styles.editButton}
+                  onPress={handleEdit}
+                  disabled={actionLoading || loading}
+                >
                   <Text style={styles.editButtonText}>Edit Dish</Text>
                 </Pressable>
               </View>
@@ -251,6 +304,17 @@ const styles = StyleSheet.create({
   statusValue: {
     ...typography.body1,
     color: '#22C55E',
+    fontWeight: '600',
+  },
+  statusPaused: {
+    color: '#F59E0B',
+  },
+  pausedCard: {
+    opacity: 0.72,
+  },
+  pausedBadge: {
+    fontSize: 11,
+    color: '#F59E0B',
     fontWeight: '600',
   },
   modalActions: {
