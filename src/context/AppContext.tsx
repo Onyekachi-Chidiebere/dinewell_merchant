@@ -1,13 +1,23 @@
-import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
+import React, { createContext, useContext, useMemo, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useLogin from '../customHooks/useLogin';
 import { io, Socket } from 'socket.io-client';
 import { BACKEND_URL } from '../theme/constants';
+import axios from '../api/axios';
 import {
   isBiometricEnabled,
   removeLoginCredentials,
   saveLoginCredentials,
 } from '../services/biometricAuth';
+import Toast from 'react-native-toast-message';
+
+function resolveApprovalStatus(userData) {
+  if (!userData) return 'pending';
+  if (userData.approvalStatus) return userData.approvalStatus;
+  if (userData.approval_status === 1) return 'active';
+  if (userData.approval_status === -1) return 'disabled';
+  return 'pending';
+}
 const AppContext = createContext<any>(null);
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
@@ -24,7 +34,11 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const storedUser = await AsyncStorage.getItem('dinewell_merchant_user');
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser);
+        setUser({
+          ...parsed,
+          approvalStatus: resolveApprovalStatus(parsed),
+        });
       }
     } catch (err) {
       console.error('Failed to load user from storage:', err);
@@ -49,8 +63,20 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = async (credentials: { email: string; password: string }) => {
     const data = await loginRequest(credentials);
-    setUser(data);
-    await saveUserToStorage(data);
+    const normalizedUser = {
+      ...data,
+      approvalStatus: resolveApprovalStatus(data),
+    };
+    setUser(normalizedUser);
+    await saveUserToStorage(normalizedUser);
+
+    if (normalizedUser.approvalStatus === 'pending') {
+      Toast.show({
+        type: 'info',
+        text1: 'Pending approval',
+        text2: 'Your restaurant is under review. We will notify you once verified.',
+      });
+    }
 
     if (
       credentials.email &&
@@ -60,21 +86,42 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       await saveLoginCredentials(credentials.email.trim(), credentials.password);
     }
 
-    return data;
+    return normalizedUser;
   };
 
+  const refreshApprovalStatus = useCallback(async () => {
+    if (!user?.id) return null;
+    const response = await axios.get(`/merchant/${user.id}/approval-status`);
+    const nextStatus = response.data?.approvalStatus || resolveApprovalStatus(response.data);
+    const updatedUser = {
+      ...user,
+      approval_status: response.data?.approval_status ?? user.approval_status,
+      approvalStatus: nextStatus,
+      restaurant_name: response.data?.restaurant_name ?? user.restaurant_name,
+    };
+    setUser(updatedUser);
+    await saveUserToStorage(updatedUser);
+    return updatedUser;
+  }, [user]);
+
   useEffect(() => {
-    if (user?.id) {
-        const newSocket = io(BACKEND_URL as string, {
-            transports: ['websocket'],
-            query: { userId: user.id },
-        });
-        setSocket(newSocket);
-        return () => {
-          try { newSocket.disconnect(); } catch {}
-        };
+    if (!user?.id || resolveApprovalStatus(user) !== 'active') {
+      setSocket(null);
+      return;
     }
-}, [user]);
+
+    const newSocket = io(BACKEND_URL as string, {
+      transports: ['websocket'],
+      query: { userId: user.id },
+    });
+    setSocket(newSocket);
+    return () => {
+      try {
+        newSocket.disconnect();
+      } catch {}
+      setSocket(null);
+    };
+  }, [user?.id, user?.approvalStatus, user?.approval_status]);
 
   const logout = async () => {
     try {
@@ -99,8 +146,19 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const value = useMemo(
-    () => ({ user, login, logout, loginLoading, loginError, socket, updateUser }),
-    [user, loginLoading, loginError, socket]
+    () => ({
+      user,
+      login,
+      logout,
+      loginLoading,
+      loginError,
+      socket,
+      updateUser,
+      refreshApprovalStatus,
+      isRestaurantApproved: resolveApprovalStatus(user) === 'active',
+      isRestaurantPending: resolveApprovalStatus(user) === 'pending',
+    }),
+    [user, loginLoading, loginError, socket, refreshApprovalStatus]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -64,6 +64,7 @@ import Toast from 'react-native-toast-message';
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 import PasswordResetOtp from './src/screens/PasswordResetOtp';
 import ResetPassword from './src/screens/ResetPassword';
+import PendingApprovalScreen from './src/screens/PendingApprovalScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -226,16 +227,42 @@ const AppStack = () => {
   );
 };
 
+const PendingStack = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="PendingApproval">
+        <Stack.Screen name="PendingApproval" component={PendingApprovalScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
+        <Stack.Screen name="ProfileDetails" component={ProfileDetailsScreen} />
+        <Stack.Screen name="Security" component={SecurityScreen} />
+        <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="GetHelp" component={GetHelpScreen} />
+        <Stack.Screen name="Legal" component={LegalScreen} />
+        <Stack.Screen name="TermsAndConditions" component={TermsAndConditionsScreen} />
+        <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+        <Stack.Screen name="Faqs" component={FaqsScreen} />
+        <Stack.Screen name="AboutDineWell" component={AboutDineWellScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+
 const Root = () => {
-  const { user } = useAppContext();
-  return user ? (
+  const { user, isRestaurantApproved } = useAppContext();
+  if (!user) {
+    return <AuthWithSignup />;
+  }
+  if (!isRestaurantApproved) {
+    return <PendingStack />;
+  }
+  return (
     <StripeProvider publishableKey={STRIPE_PUBLIC_KEY}>
       <BiometricLockGate>
         <AppStack />
       </BiometricLockGate>
     </StripeProvider>
-  ) : (
-    <AuthWithSignup />
   );
 };
 

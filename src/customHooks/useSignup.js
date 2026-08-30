@@ -477,8 +477,8 @@ const useSignup = () => {
       await clearSignupProgress();
       Toast.show({
         type: 'success',
-        text1: 'Account created',
-        text2: 'Your restaurant pictures were saved. You can log in now.',
+        text1: 'Account submitted',
+        text2: 'Your restaurant is under review. We will notify you once an admin verifies your account.',
       });
       return true;
     } catch (err) {
@@ -509,8 +509,8 @@ const useSignup = () => {
       await clearSignupProgress();
       Toast.show({
         type: 'success',
-        text1: 'Account created',
-        text2: 'You can add pictures later from your profile.',
+        text1: 'Account submitted',
+        text2: 'Your restaurant is under review. We will notify you once an admin verifies your account.',
       });
       return true;
     } catch (err) {
