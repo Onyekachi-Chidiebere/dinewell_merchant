@@ -10,6 +10,7 @@ import {
   saveLoginCredentials,
 } from '../services/biometricAuth';
 import Toast from 'react-native-toast-message';
+import { usePushNotifications } from '../customHooks/usePushNotifications';
 
 function resolveApprovalStatus(userData) {
   if (!userData) return 'pending';
@@ -24,6 +25,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const { login: loginRequest, loading: loginLoading, error: loginError } = useLogin();
   const [user, setUser] = useState<any>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
+  usePushNotifications(user?.id, 'merchant');
 
   // Load user from storage on app start
   useEffect(() => {
@@ -125,6 +127,14 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
+      if (user?.id) {
+        try {
+          const { unregisterDeviceToken } = await import('../services/pushNotifications');
+          await unregisterDeviceToken(user.id);
+        } catch (pushErr) {
+          console.error('unregisterDeviceToken error:', pushErr);
+        }
+      }
       setUser(null);
       await removeUserFromStorage();
       await removeLoginCredentials();

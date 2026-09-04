@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "49280689046",
+    "project_id": "dinewell-b3e2e",
+    "storage_bucket": "dinewell-b3e2e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49280689046:android:80bf3e6c95673c2eec73b7",
+        "android_client_info": {
+          "package_name": "com.dinewell.client"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVTHScvj7edB0aUD92P8J7yYn2V2mat6s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49280689046:android:130853642489009aec73b7",
+        "android_client_info": {
+          "package_name": "com.dinewell.merchant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVTHScvj7edB0aUD92P8J7yYn2V2mat6s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

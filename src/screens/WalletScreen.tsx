@@ -14,13 +14,13 @@ import colors from '../theme/colors';
 import typography from '../theme/typography';
 import {
   SearchIcon,
-  NotificationIcon,
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
 } from '../assets/icons';
 import WalletCard from '../components/WalletCard';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import axios from '../api/axios';
+import NotificationBellButton from '../components/NotificationBellButton';
 import { useAppContext } from '../context/AppContext';
 import Toast from 'react-native-toast-message';
 
@@ -92,9 +92,7 @@ const WalletScreen = ({ navigation }: WalletScreenProps) => {
             <SearchIcon width={20} height={20} color={colors.text.tertiary} />
             <Text style={styles.searchText}>Search here</Text>
           </View>
-          <TouchableOpacity style={styles.notificationButton}>
-            <NotificationIcon width={24} height={24} color={colors.text.tertiary} />
-          </TouchableOpacity>
+          <NotificationBellButton userId={user?.id} variant="icon" color={colors.text.tertiary} size={24} />
         </View>
         <WalletCard />
         <View style={styles.cardActions}>

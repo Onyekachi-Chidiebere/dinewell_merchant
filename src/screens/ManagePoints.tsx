@@ -240,10 +240,13 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
 
         } catch (error: any) {
             console.error('Error creating points transaction:', error);
+            const code = error.response?.data?.code;
+            const message =
+                error.response?.data?.error || 'Failed to create points transaction';
             Toast.show({
                 type: 'error',
-                text1: 'Error',
-                text2: error.response?.data?.error || 'Failed to create points transaction'
+                text1: code === 'POINTS_BLOCKED' ? 'Points blocked' : 'Error',
+                text2: message,
             });
         } finally {
             setIsCreatingPoints(false);

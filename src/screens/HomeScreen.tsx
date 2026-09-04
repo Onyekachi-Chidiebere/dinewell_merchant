@@ -20,13 +20,13 @@ import colors from '../theme/colors';
 import typography, { fontFamily } from '../theme/typography';
 import icons from '../theme/icons';
 import Filter from '../assets/icons/filter.svg';
-import Bell from '../assets/icons/notification_bell.svg';
 import Share from '../assets/icons/sharepoints.svg';
 import Refer from '../assets/icons/refer.svg';
 import DashBackground from '../assets/icons/dash-background.svg';
 import GreyBackground from '../assets/icons/grey-background.svg';
 import { useAppContext } from '../context/AppContext';
 import { useHome } from '../customHooks/useHome';
+import NotificationBellButton from '../components/NotificationBellButton';
 
 const mockData: PointsData = {
   pointsBalance: 0,
@@ -126,9 +126,7 @@ const HomeScreen = () => {
               <Text style={styles.userName}>{user.restaurant_name}</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.notificationButton}>
-            <Bell width={20} height={20} />
-          </TouchableOpacity>
+          <NotificationBellButton userId={user?.id} />
         </View>
 
         {/* Points Balance Card */}

@@ -12,17 +12,20 @@ import {
   TextInput
 } from 'react-native';
 import colors from '../theme/colors';
-import { SearchIcon, NotificationIcon, StarIcon } from '../assets/icons/index';
+import { SearchIcon, StarIcon } from '../assets/icons/index';
 import { useBottomSheet } from '../context/BottomSheetContext';
 import typography from '../theme/typography';
 import GreyBackground from '../assets/icons/grey-background.svg';
 import AddIcon from '../assets/icons/add.svg';
 import { useDishContext } from '../context/DishContext';
 import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
+import NotificationBellButton from '../components/NotificationBellButton';
+import { useAppContext } from '../context/AppContext';
 
 
 const DishesScreen = () => {
   const { openDishSheet } = useBottomSheet();
+  const { user } = useAppContext();
 
   const [dishDetails, setDishDetails] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -85,9 +88,7 @@ const DishesScreen = () => {
           />
         </View>
         <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton}>
-            <NotificationIcon width={24} height={24} color={colors.primary.main} />
-          </TouchableOpacity>
+          <NotificationBellButton userId={user?.id} variant="icon" color={colors.primary.main} size={24} />
         </View>
       </View>
       <View style={styles.filterRowContainer}>

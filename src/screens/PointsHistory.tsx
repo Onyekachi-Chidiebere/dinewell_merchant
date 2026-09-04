@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import colors from '../theme/colors';
 import typography from '../theme/typography';
-import { SearchIcon, NotificationIcon } from '../assets/icons';
+import { SearchIcon } from '../assets/icons';
 import ArrowDownIcon from '../assets/icons/ArrowDownIcon.svg';
 import ArrowUpIcon from '../assets/icons/ArrowUpIcon.svg';
 import DollarIcon from '../assets/icons/DollarIcon.svg';
@@ -26,6 +26,7 @@ import axios from '../api/axios';
 import { useAppContext } from '../context/AppContext';
 import Toast from 'react-native-toast-message';
 import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
+import NotificationBellButton from '../components/NotificationBellButton';
 
 interface Transaction {
   id: number;
@@ -94,9 +95,7 @@ const PointHistoryScreen = () => {
           />
         </View>
         <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton}>
-            <NotificationIcon width={24} height={24} color={colors.primary.main} />
-          </TouchableOpacity>
+          <NotificationBellButton userId={user?.id} variant="icon" color={colors.primary.main} size={24} />
         </View>
       </View>
       {loading ? (

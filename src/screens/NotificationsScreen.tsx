@@ -1,45 +1,74 @@
-import React, { useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import colors from '../theme/colors';
 import typography from '../theme/typography';
 import { ArrowLeftIcon, BellIcon, EmailIcon } from '../assets/icons';
+import { useAppContext } from '../context/AppContext';
+import { useNotifications } from '../customHooks/useNotifications';
 
 type RootStackParamList = {
   Profile: undefined;
+  Notifications: undefined;
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+const formatTime = (value: string) => {
+  try {
+    return new Date(value).toLocaleString();
+  } catch {
+    return value;
+  }
+};
+
 const NotificationsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [appNotifications, setAppNotifications] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(false);
+  const { user } = useAppContext();
+  const {
+    notifications,
+    preferences,
+    unreadCount,
+    loading,
+    fetchNotifications,
+    updatePreferences,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications(user?.id);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchNotifications();
+    }, [fetchNotifications])
+  );
 
   const menuItems = [
     {
       id: 1,
       title: 'App Notifications',
-      subtitle: 'Account name,email,phone',
-      isToggle: true,
-      isEnabled: appNotifications,
+      subtitle: 'Show alerts in your inbox',
+      isEnabled: preferences.appNotifications,
       icon: BellIcon,
-      onToggle: () => setAppNotifications(!appNotifications),
+      onToggle: () =>
+        updatePreferences({ appNotifications: !preferences.appNotifications }).catch(() => {}),
     },
     {
       id: 2,
       title: 'Email Notifications',
-      subtitle: 'Account name,email,phone',
-      isToggle: true,
-      isEnabled: emailNotifications,
+      subtitle: 'Receive updates by email',
+      isEnabled: preferences.emailNotifications,
       icon: EmailIcon,
-      onToggle: () => setEmailNotifications(!emailNotifications),
+      onToggle: () =>
+        updatePreferences({ emailNotifications: !preferences.emailNotifications }).catch(() => {}),
     },
   ];
 
@@ -48,47 +77,78 @@ const NotificationsScreen = () => {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerLeft}>
-            <TouchableOpacity 
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
               <ArrowLeftIcon width={24} height={24} color={colors.border.subtle} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Notifications</Text>
           </View>
+          {unreadCount > 0 && (
+            <TouchableOpacity onPress={markAllAsRead}>
+              <Text style={styles.markAll}>Mark all read</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.menuGroup}>
-          {menuItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.menuItem}
-              onPress={item.onToggle}
-            >
-              <View style={styles.menuItemLeft}>
-                <View style={styles.iconContainer}>
-                  <item.icon width={24} height={24} color={colors.primary.middle} />
+      <FlatList
+        data={notifications}
+        keyExtractor={(item) => String(item.id)}
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={fetchNotifications} />
+        }
+        ListHeaderComponent={
+          <View style={styles.menuGroup}>
+            {menuItems.map((item) => (
+              <TouchableOpacity key={item.id} style={styles.menuItem} onPress={item.onToggle}>
+                <View style={styles.menuItemLeft}>
+                  <View style={styles.iconContainer}>
+                    <item.icon width={24} height={24} color={colors.primary.middle} />
+                  </View>
+                  <View style={styles.menuItemContent}>
+                    <Text style={styles.menuItemTitle}>{item.title}</Text>
+                    <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
+                  </View>
                 </View>
-                <View style={styles.menuItemContent}>
-                  <Text style={styles.menuItemTitle}>{item.title}</Text>
-                  <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
+                <View
+                  style={[
+                    styles.toggle,
+                    item.isEnabled ? styles.toggleActive : styles.toggleInactive,
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.toggleCircle,
+                      item.isEnabled ? styles.toggleCircleActive : styles.toggleCircleInactive,
+                    ]}
+                  />
                 </View>
-              </View>
-              <View style={[
-                styles.toggle,
-                item.isEnabled ? styles.toggleActive : styles.toggleInactive
-              ]}>
-                <View style={[
-                  styles.toggleCircle,
-                  item.isEnabled ? styles.toggleCircleActive : styles.toggleCircleInactive
-                ]} />
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+              </TouchableOpacity>
+            ))}
+            <Text style={styles.sectionTitle}>Inbox</Text>
+          </View>
+        }
+        ListEmptyComponent={
+          loading ? (
+            <ActivityIndicator color={colors.primary.main} style={{ marginTop: 24 }} />
+          ) : (
+            <Text style={styles.emptyText}>No notifications yet</Text>
+          )
+        }
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={[styles.notificationCard, !item.isRead && styles.notificationUnread]}
+            onPress={() => markAsRead(item.id)}
+          >
+            <View style={styles.notificationHeader}>
+              <Text style={styles.notificationTitle}>{item.title}</Text>
+              {!item.isRead && <View style={styles.unreadDot} />}
+            </View>
+            <Text style={styles.notificationBody}>{item.body}</Text>
+            <Text style={styles.notificationTime}>{formatTime(item.dateCreated)}</Text>
+          </TouchableOpacity>
+        )}
+      />
     </View>
   );
 };
@@ -111,6 +171,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 20,
     paddingTop: 80,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   headerLeft: {
     flexDirection: 'row',
@@ -131,11 +194,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-  content: {
+  markAll: {
+    ...typography.caption,
+    color: colors.primary.main,
+    fontWeight: '600',
+  },
+  listContent: {
     padding: 16,
+    paddingBottom: 40,
   },
   menuGroup: {
     gap: 16,
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    ...typography.subtitle2,
+    color: colors.text.secondary,
+    fontWeight: '700',
+    marginTop: 8,
   },
   menuItem: {
     flexDirection: 'row',
@@ -151,6 +227,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flex: 1,
   },
   iconContainer: {
     width: 32,
@@ -162,6 +239,7 @@ const styles = StyleSheet.create({
   },
   menuItemContent: {
     gap: 4,
+    flex: 1,
   },
   menuItemTitle: {
     ...typography.subtitle2,
@@ -200,6 +278,52 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border.subtle,
     transform: [{ translateX: 0 }],
   },
+  emptyText: {
+    ...typography.body2,
+    color: colors.text.tertiary,
+    textAlign: 'center',
+    marginTop: 24,
+  },
+  notificationCard: {
+    backgroundColor: colors.background.default,
+    borderRadius: 12,
+    borderWidth: 0.4,
+    borderColor: colors.border.subtle,
+    padding: 14,
+    marginBottom: 10,
+  },
+  notificationUnread: {
+    borderColor: colors.primary.main,
+    backgroundColor: colors.background.subtle,
+  },
+  notificationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  notificationTitle: {
+    ...typography.subtitle2,
+    color: colors.text.primary,
+    fontWeight: '700',
+    flex: 1,
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary.main,
+    marginLeft: 8,
+  },
+  notificationBody: {
+    ...typography.body2,
+    color: colors.text.secondary,
+    marginBottom: 6,
+  },
+  notificationTime: {
+    ...typography.caption,
+    color: colors.text.tertiary,
+  },
 });
 
-export default NotificationsScreen; 
+export default NotificationsScreen;
