@@ -30,4 +30,4 @@ declare module 'react-native-chart-kit' {
   }
 
   export class LineChart extends React.Component<LineChartProps> {}
-} 
+}

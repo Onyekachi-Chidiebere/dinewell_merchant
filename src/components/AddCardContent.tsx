@@ -39,7 +39,7 @@ const AddCardContent = ({ onNext }: { onNext?: () => void }) => {
               <Text style={styles.brandText}>Dine<Text style={{ color: '#F59E0B' }}>Well</Text></Text>
             </View>
             <LinearGradient
-              colors={["#E25520", "#D28F0D"]}
+              colors={['#E25520', '#D28F0D']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.bottomBand}

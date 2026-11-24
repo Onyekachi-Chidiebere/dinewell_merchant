@@ -104,12 +104,12 @@ const HomeViewSheet: React.FC<HomeViewSheetProps> = ({
                 key={item.day}
                 style={[
                   styles.dayCircle,
-                  !item.active && styles.dayCircleInactive
+                  !item.active && styles.dayCircleInactive,
                 ]}
               >
                 <Text style={[
                   styles.dayText,
-                  !item.active && styles.dayTextInactive
+                  !item.active && styles.dayTextInactive,
                 ]}>{item.day}</Text>
               </View>
             ))}
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   headerText: {
     alignItems: 'center',
     position: 'absolute',
-    top: 75
+    top: 75,
   },
   title: {
     ...typography.body2,
@@ -196,13 +196,13 @@ const styles = StyleSheet.create({
   filterButton: {
     borderRadius: 100,
     backgroundColor: colors.background.paper,
-    borderWidth: .5,
+    borderWidth: 0.5,
     borderColor: colors.border.subtle,
   },
   filterButtonActive: {
     borderRadius: 100,
     backgroundColor: colors.background.subtle,
-    borderWidth: .5,
+    borderWidth: 0.5,
     borderColor: colors.border.subtle,
   },
   filterButtonText: {
@@ -279,8 +279,8 @@ const styles = StyleSheet.create({
   pointsTag: {
     borderRadius: 100,
     backgroundColor: colors.background.subtle,
-    borderWidth: .5,
-    flex: .5,
+    borderWidth: 0.5,
+    flex: 0.5,
     justifyContent: 'center',
     borderColor: colors.border.subtle,
   },
@@ -406,4 +406,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeViewSheet; 
+export default HomeViewSheet;

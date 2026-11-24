@@ -4,20 +4,20 @@ import { Pressable, SafeAreaView } from 'react-native';
 import colors from '../theme/colors';
 import { useBottomSheet } from '../context/BottomSheetContext';
 import { useCardContext } from '../context/CardContext';
-import Visa from '../assets/icons/Visa.svg'
-import Mastercard from '../assets/icons/Mastercard.svg'
-import AmericanExpress from '../assets/icons/AmericanExpress.svg'
-import Discover from '../assets/icons/Discover.svg'
-import JCB from '../assets/icons/JCB.svg'
-import UnionPay from '../assets/icons/UnionPay.svg'
-import DefaultCard from '../assets/icons/DefaultCard.svg'
+import Visa from '../assets/icons/Visa.svg';
+import Mastercard from '../assets/icons/Mastercard.svg';
+import AmericanExpress from '../assets/icons/AmericanExpress.svg';
+import Discover from '../assets/icons/Discover.svg';
+import JCB from '../assets/icons/JCB.svg';
+import UnionPay from '../assets/icons/UnionPay.svg';
+import DefaultCard from '../assets/icons/DefaultCard.svg';
 
 // Card type icons mapping
 const getCardIcon = (brand: string) => {
   const brandLower = brand?.toLowerCase();
   switch (brandLower) {
     case 'visa':
-      return <Visa width={40} height={40} />
+      return <Visa width={40} height={40} />;
     case 'mastercard':
       return  <Mastercard width={40} height={40} />;
     case 'american_express':
@@ -42,9 +42,9 @@ const ManageCards = () => {
     const handleSetDefault = async (cardId: string) => {
         try {
             await setDefaultCard(cardId);
-           
+
         } catch (e: any) {
-            
+
         }
     };
 
@@ -55,12 +55,12 @@ const ManageCards = () => {
                     <Text style={styles.cardIcon}>{getCardIcon(card.brand)}</Text>
                     <Text style={styles.cardBrand}>{card.brand?.toUpperCase() || 'CARD'}</Text>
                 </View>
-                {card.isDefault ?(
+                {card.isDefault ? (
                     <View style={styles.activePill}>
                         <Text style={styles.activePillText}>Active</Text>
                     </View>
-                ):(
-                    <Pressable 
+                ) : (
+                    <Pressable
                         style={styles.setDefaultButton}
                         onPress={() => handleSetDefault(card.id)}
                     >
@@ -78,7 +78,7 @@ const ManageCards = () => {
                 <View style={styles.divider} />
                 <Text style={styles.cvv}>***</Text>
             </View>
-           
+
         </View>
     );
 
@@ -105,13 +105,13 @@ const ManageCards = () => {
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <BackButton />
-                <TouchableOpacity onPress={() => {openAddCard()}} style={styles.addCardButtonContainer}>
+                <TouchableOpacity onPress={() => {openAddCard();}} style={styles.addCardButtonContainer}>
                     <View style={styles.addCardButton}>
                         <Text style={styles.addCardButtonText}>++</Text>
                     </View>
                 </TouchableOpacity>
             </View>
-            
+
             {error ? (
                 <View style={styles.errorContainer}>
                     <Text style={styles.errorText}>{error}</Text>

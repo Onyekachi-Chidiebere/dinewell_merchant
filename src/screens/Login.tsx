@@ -1,22 +1,22 @@
-import React, { useState, useCallback, useRef } from "react";
-import { Text, StyleSheet, View, TextInput, TouchableOpacity, Dimensions, Pressable, ActivityIndicator, Alert } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
-import LinearGradient from "react-native-linear-gradient";
-import colors from "../theme/colors";
-import { FaceIdIcon } from "../assets/icons";
-import { useAppContext } from "../context/AppContext";
-import { useSignupContext } from "../context/SignupContext";
-import KeyboardAwareScreen from "../components/KeyboardAwareScreen";
+import React, { useState, useCallback, useRef } from 'react';
+import { Text, StyleSheet, View, TextInput, TouchableOpacity, Dimensions, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import LinearGradient from 'react-native-linear-gradient';
+import colors from '../theme/colors';
+import { FaceIdIcon } from '../assets/icons';
+import { useAppContext } from '../context/AppContext';
+import { useSignupContext } from '../context/SignupContext';
+import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
 import {
   canUseBiometricLogin,
   getLoginCredentials,
-} from "../services/biometricAuth";
+} from '../services/biometricAuth';
 
-const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get('window');
 
 const Login = ({navigation}:any) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const { login, loginLoading } = useAppContext();
   const { applySignupProgress } = useSignupContext();
   const [canBiometricLogin, setCanBiometricLogin] = useState(false);
@@ -24,7 +24,7 @@ const Login = ({navigation}:any) => {
   const hasAutoBiometricLogin = useRef(false);
 
   const continueIncompleteSignup = useCallback(
-    async (err, credentials) => {
+    async (err: any, credentials: { email: string; password: string }) => {
       if (err?.code !== 'SIGNUP_INCOMPLETE' || !err.signupProgress) {
         return false;
       }
@@ -74,7 +74,6 @@ const Login = ({navigation}:any) => {
         password,
       });
       if (!handled) {
-        console.error('Biometric login error:', e);
       }
     }
   }, [biometricLabel, login, continueIncompleteSignup, email, password]);
@@ -108,7 +107,7 @@ const Login = ({navigation}:any) => {
 
   return (
     <LinearGradient
-      colors={["#F6BD87", "#FFF6ED", "#FFFFFF"]}
+      colors={['#F6BD87', '#FFF6ED', '#FFFFFF']}
       locations={[0, 0.45, 1]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
@@ -116,7 +115,7 @@ const Login = ({navigation}:any) => {
     >
       <KeyboardAwareScreen embed contentContainerStyle={styles.outerWrapper}>
         <View style={styles.headerWrapper}>
-          <Text style={styles.title}>{"Login\nDetails"}</Text>
+          <Text style={styles.title}>{'Login\nDetails'}</Text>
         </View>
         <View style={styles.formWrapper}>
           {canBiometricLogin && (
@@ -160,7 +159,7 @@ const Login = ({navigation}:any) => {
             autoCorrect={false}
           />
           <View style={styles.forgotPasswordHolder}>
-            <Pressable onPress={()=>{navigation.navigate('PasswordResetOtp')}}><Text style={styles.forgotPasswordText}>Forgot Passwprd?</Text></Pressable>
+            <Pressable onPress={()=>{navigation.navigate('PasswordResetOtp');}}><Text style={styles.forgotPasswordText}>Forgot Passwprd?</Text></Pressable>
           </View>
         </View>
 
@@ -178,19 +177,19 @@ export default Login;
 
 const styles = StyleSheet.create({
   forgotPasswordText:{
-    color:colors.primary.main
+    color:colors.primary.main,
   },
   forgotPasswordHolder:{
     alignItems:'flex-end',
     width:'100%',
-    paddingHorizontal:20
+    paddingHorizontal:20,
   },
   container: {
     flex: 1,
   },
   outerWrapper: {
     flexGrow: 1,
-    justifyContent: "space-between",
+    justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingTop: height * 0.08,
     paddingBottom: 40,
@@ -200,8 +199,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 40,
-    fontWeight: "700",
-    color: "#18181B",
+    fontWeight: '700',
+    color: '#18181B',
     lineHeight: 48,
   },
   formWrapper: {
@@ -209,29 +208,29 @@ const styles = StyleSheet.create({
   },
   input: {
     width: width - 48,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 40,
     borderWidth: 1,
-    borderColor: "#C4CBF2",
+    borderColor: '#C4CBF2',
     paddingVertical: 22,
     paddingHorizontal: 20,
     fontSize: 16,
-    color: "#18181B",
+    color: '#18181B',
   },
   bottomWrapper: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   button: {
     width: width - 48,
     backgroundColor: colors.primary.main,
     borderRadius: 40,
     paddingVertical: 22,
-    alignItems: "center",
+    alignItems: 'center',
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#fff",
+    fontWeight: '600',
+    color: '#fff',
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -242,16 +241,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     width: width - 48,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 40,
     borderWidth: 1,
-    borderColor: "#C4CBF2",
+    borderColor: '#C4CBF2',
     paddingVertical: 22,
     marginBottom: 8,
   },
   biometricButtonText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.primary.main,
   },
 });

@@ -132,7 +132,7 @@ const ProfileScreen = () => {
               </View>
             </View>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.editButton}
             onPress={() => navigation.navigate('ProfileDetails' as never)}
           >
@@ -142,11 +142,9 @@ const ProfileScreen = () => {
 
         <View
           style={styles.decorationSection}
-        >
-
-        </ View>
+         />
       </View>
-   
+
       <ScrollView style={styles.scrollView}>
 
         <View style={styles.menuSection}>
@@ -250,7 +248,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
 
- 
+
   menuSection: {
     padding: 16,
   },
@@ -311,4 +309,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProfileScreen; 
+export default ProfileScreen;

@@ -19,7 +19,7 @@ const { width: screenWidth } = Dimensions.get('window');
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (reason: string) => void;
+  onSubmit: (reason: string, currentPassword: string) => void;
 };
 
 const OTHER_REASON = 'Other';
@@ -35,6 +35,7 @@ const reasons = [
 const CloseAccountModal = ({ visible, onClose, onSubmit }: Props) => {
   const [selectedReason, setSelectedReason] = useState('');
   const [otherReasonText, setOtherReasonText] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
 
   const handleReasonSelect = (reason: string) => {
     setSelectedReason(reason);
@@ -45,11 +46,13 @@ const CloseAccountModal = ({ visible, onClose, onSubmit }: Props) => {
 
   const canSubmit =
     Boolean(selectedReason) &&
-    (selectedReason !== OTHER_REASON || otherReasonText.trim().length > 0);
+    (selectedReason !== OTHER_REASON || otherReasonText.trim().length > 0) &&
+    currentPassword.length > 0;
 
   const handleClose = () => {
     setSelectedReason('');
     setOtherReasonText('');
+    setCurrentPassword('');
     onClose();
   };
 
@@ -63,9 +66,10 @@ const CloseAccountModal = ({ visible, onClose, onSubmit }: Props) => {
         ? `Other: ${otherReasonText.trim()}`
         : selectedReason;
 
-    onSubmit(reason);
+    onSubmit(reason, currentPassword);
     setSelectedReason('');
     setOtherReasonText('');
+    setCurrentPassword('');
   };
 
   return (
@@ -94,7 +98,7 @@ const CloseAccountModal = ({ visible, onClose, onSubmit }: Props) => {
 
             <View style={styles.content}>
               <CloseAccountIcon/>
-             
+
               <Text style={styles.title}>Close Account</Text>
               <Text style={styles.description}>
                 This action is irreversible, we would love to know why your deactivating your account.
@@ -111,7 +115,7 @@ const CloseAccountModal = ({ visible, onClose, onSubmit }: Props) => {
                   >
                     <View style={[
                       styles.radioButton,
-                      selectedReason === reason && styles.radioButtonSelected
+                      selectedReason === reason && styles.radioButtonSelected,
                     ]} />
                     <Text style={styles.reasonText}>{reason}</Text>
                   </TouchableOpacity>
@@ -132,12 +136,22 @@ const CloseAccountModal = ({ visible, onClose, onSubmit }: Props) => {
               )}
               <View style={styles.divider} />
             </View>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Current password"
+              placeholderTextColor={colors.text.tertiary}
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
 
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={[
                   styles.submitButton,
-                  !canSubmit && styles.submitButtonDisabled
+                  !canSubmit && styles.submitButtonDisabled,
                 ]}
                 onPress={handleSubmit}
                 disabled={!canSubmit}
@@ -294,6 +308,16 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     backgroundColor: colors.background.default,
   },
+  passwordInput: {
+    marginHorizontal: 8,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    color: colors.text.primary,
+    backgroundColor: colors.background.default,
+  },
   buttonContainer: {
     alignItems: 'center',
     alignSelf: 'stretch',
@@ -330,4 +354,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CloseAccountModal; 
+export default CloseAccountModal;

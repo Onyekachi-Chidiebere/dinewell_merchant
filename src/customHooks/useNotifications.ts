@@ -27,41 +27,38 @@ export function useNotifications(userId?: string | number | null) {
   const [prefsLoading, setPrefsLoading] = useState(false);
 
   const fetchUnreadCount = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {return;}
     try {
-      const response = await axios.get(`/users/${userId}/notifications/unread-count`);
+      const response = await axios.get('/users/me/notifications/unread-count');
       setUnreadCount(response.data.unreadCount || 0);
     } catch (error) {
-      console.error('fetchUnreadCount error:', error);
     }
   }, [userId]);
 
   const fetchNotifications = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {return;}
     setLoading(true);
     try {
-      const response = await axios.get(`/users/${userId}/notifications`, {
+      const response = await axios.get('/users/me/notifications', {
         params: { page: 1, limit: 50 },
       });
       setNotifications(response.data.notifications || []);
       setUnreadCount(response.data.unreadCount || 0);
     } catch (error) {
-      console.error('fetchNotifications error:', error);
     } finally {
       setLoading(false);
     }
   }, [userId]);
 
   const fetchPreferences = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {return;}
     setPrefsLoading(true);
     try {
-      const response = await axios.get(`/users/${userId}/notification-preferences`);
+      const response = await axios.get('/users/me/notification-preferences');
       if (response.data?.data) {
         setPreferences(response.data.data);
       }
     } catch (error) {
-      console.error('fetchPreferences error:', error);
     } finally {
       setPrefsLoading(false);
     }
@@ -69,11 +66,11 @@ export function useNotifications(userId?: string | number | null) {
 
   const updatePreferences = useCallback(
     async (updates: Partial<NotificationPreferences>) => {
-      if (!userId) return;
+      if (!userId) {return;}
       const previous = preferences;
       setPreferences((prev) => ({ ...prev, ...updates }));
       try {
-        const response = await axios.put(`/users/${userId}/notification-preferences`, updates);
+        const response = await axios.put('/users/me/notification-preferences', updates);
         if (response.data?.data) {
           setPreferences(response.data.data);
         }
@@ -83,7 +80,6 @@ export function useNotifications(userId?: string | number | null) {
         }
       } catch (error) {
         setPreferences(previous);
-        console.error('updatePreferences error:', error);
         throw error;
       }
     },
@@ -92,15 +88,14 @@ export function useNotifications(userId?: string | number | null) {
 
   const markAsRead = useCallback(
     async (notificationId: number) => {
-      if (!userId) return;
+      if (!userId) {return;}
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
       try {
-        await axios.patch(`/users/${userId}/notifications/${notificationId}/read`);
+        await axios.patch(`/users/me/notifications/${notificationId}/read`);
       } catch (error) {
-        console.error('markAsRead error:', error);
         fetchNotifications();
       }
     },
@@ -108,19 +103,18 @@ export function useNotifications(userId?: string | number | null) {
   );
 
   const markAllAsRead = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {return;}
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     setUnreadCount(0);
     try {
-      await axios.patch(`/users/${userId}/notifications/read-all`);
+      await axios.patch('/users/me/notifications/read-all');
     } catch (error) {
-      console.error('markAllAsRead error:', error);
       fetchNotifications();
     }
   }, [userId, fetchNotifications]);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {return;}
     fetchPreferences();
     fetchNotifications();
   }, [userId, fetchPreferences, fetchNotifications]);

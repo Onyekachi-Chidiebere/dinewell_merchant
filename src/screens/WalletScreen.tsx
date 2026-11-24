@@ -63,26 +63,25 @@ const WalletScreen = ({ navigation }: WalletScreenProps) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`/restaurants/${user.id}/payments/history`);
+      const response = await axios.get('/restaurants/me/payments/history');
       setTransactions(response.data || []);
     } catch (err: any) {
-      console.error('Error fetching payment history:', err);
       setError(err.response?.data?.error || 'Failed to fetch transactions');
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: err.response?.data?.error || 'Failed to fetch transactions'
+        text2: err.response?.data?.error || 'Failed to fetch transactions',
       });
       setTransactions([]);
     } finally {
       setLoading(false);
     }
-  }
-  
+  };
+
   useEffect(() => {
     fetchTransactions();
   }, [user?.id]);
-  
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>

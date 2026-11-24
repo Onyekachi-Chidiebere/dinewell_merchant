@@ -9,7 +9,7 @@ import {
   StatusBar,
   Pressable,
   Modal,
-  TextInput
+  TextInput,
 } from 'react-native';
 import colors from '../theme/colors';
 import { SearchIcon, StarIcon } from '../assets/icons/index';
@@ -27,7 +27,7 @@ const DishesScreen = () => {
   const { openDishSheet } = useBottomSheet();
   const { user } = useAppContext();
 
-  const [dishDetails, setDishDetails] = useState(null);
+  const [dishDetails, setDishDetails] = useState<any>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   const {
@@ -50,7 +50,7 @@ const DishesScreen = () => {
   const isPaused = (dishDetails?.status || 'active') === 'paused';
 
   const handlePauseToggle = async () => {
-    if (!dishDetails?.id || actionLoading) return;
+    if (!dishDetails?.id || actionLoading) {return;}
     setActionLoading(true);
     try {
       const updated = isPaused
@@ -65,7 +65,7 @@ const DishesScreen = () => {
   };
 
   const handleEdit = () => {
-    if (!dishDetails) return;
+    if (!dishDetails) {return;}
     const dish = dishDetails;
     setDishDetails(null);
     openDishSheet({ mode: 'edit', dish });
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
   closeButtonText: {
     fontSize: 18,
     fontWeight: '900',
-    color: colors.text.white
+    color: colors.text.white,
   },
   viewButtonText: {
     color: colors.text.white,
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border.secondary,
     borderRadius: 20,
     paddingHorizontal: 10,
-    paddingVertical: 3
+    paddingVertical: 3,
   },
   restaurantHeader: {
     flexDirection: 'row',
@@ -525,8 +525,8 @@ const styles = StyleSheet.create({
   pointsTag: {
     borderRadius: 100,
     backgroundColor: colors.background.subtle,
-    borderWidth: .5,
-    flex: .5,
+    borderWidth: 0.5,
+    flex: 0.5,
     justifyContent: 'center',
     borderColor: colors.border.subtle,
   },
@@ -692,13 +692,13 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     backgroundColor: colors.primary.light,
     padding: 10,
-    borderWidth: .5,
+    borderWidth: 0.5,
     borderColor: colors.border.secondary,
   },
   filterButtonActive: {
     borderRadius: 100,
     backgroundColor: colors.border.fade,
-    borderWidth: .5,
+    borderWidth: 0.5,
     borderColor: colors.border.dark,
   },
   filterButtonText: {
@@ -722,4 +722,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DishesScreen; 
+export default DishesScreen;

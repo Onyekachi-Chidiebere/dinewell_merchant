@@ -28,7 +28,7 @@ const NotificationBellButton: React.FC<Props> = ({
       return;
     }
     try {
-      const response = await axios.get(`/users/${userId}/notifications/unread-count`);
+      const response = await axios.get('/users/me/notifications/unread-count');
       setUnreadCount(response.data.unreadCount || 0);
     } catch {
       // Keep existing count on transient errors

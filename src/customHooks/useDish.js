@@ -30,7 +30,7 @@ const useDish = () => {
 
   const setImage = (input) => {
     const asset = Array.isArray(input) ? input[0] : input?.assets ? input.assets[0] : input;
-    if (!asset) return;
+    if (!asset) {return;}
     setDishImage({
       uri: asset.uri || '',
       fileName: asset.fileName || 'dish.jpg',
@@ -46,7 +46,7 @@ const useDish = () => {
   };
 
   const loadDishForEdit = (dish) => {
-    if (!dish) return;
+    if (!dish) {return;}
     setEditingDishId(dish.id);
     setFields({
       dish_name: dish.dish_name || '',
@@ -65,9 +65,11 @@ const useDish = () => {
   };
 
   const fetchDishes = async () => {
-    if (!user?.id) return [];
+    if (!user?.id) {return [];}
     try {
-      const res = await axios.get(`/restaurants/${user.id}/dishes/${searchQuery}`);
+      const res = await axios.get('/restaurants/me/dishes', {
+        params: { search: searchQuery || undefined },
+      });
       setDishes(res.data.dishes || []);
       setActiveDishes(res.data.activeDishes);
       return res.data.dishes || [];
@@ -82,7 +84,7 @@ const useDish = () => {
   };
 
   const buildImagePayload = () => {
-    if (!dishImage?.base64) return undefined;
+    if (!dishImage?.base64) {return undefined;}
     return {
       base64: dishImage.base64,
       fileName: dishImage.fileName || 'dish.jpg',
@@ -91,15 +93,14 @@ const useDish = () => {
   };
 
   const createDish = async () => {
-    if (!user?.id) throw new Error('Not authenticated');
-    if (!fields.dish_name?.trim()) throw new Error('Dish name is required');
-    if (fields.price === '' || fields.price == null) throw new Error('Dish price is required');
+    if (!user?.id) {throw new Error('Not authenticated');}
+    if (!fields.dish_name?.trim()) {throw new Error('Dish name is required');}
+    if (fields.price === '' || fields.price == null) {throw new Error('Dish price is required');}
 
     setLoading(true);
     setError(null);
     try {
       const payload = {
-        restaurant_id: String(user.id),
         dish_name: fields.dish_name.trim(),
         price: String(fields.price),
       };
@@ -110,7 +111,7 @@ const useDish = () => {
         payload.base_points_per_dish = String(fields.base_points_per_dish);
       }
       const image = buildImagePayload();
-      if (image) payload.dishImage = image;
+      if (image) {payload.dishImage = image;}
 
       const res = await axios.post('/dishes/base64', payload, { timeout: 120000 });
       await fetchDishes();
@@ -121,7 +122,6 @@ const useDish = () => {
       });
       return res.data;
     } catch (e) {
-      console.log('createDish error', e?.response?.data || e?.message || e);
       setError(e);
       Toast.show({
         type: 'error',
@@ -135,16 +135,15 @@ const useDish = () => {
   };
 
   const updateDish = async () => {
-    if (!user?.id) throw new Error('Not authenticated');
-    if (!editingDishId) throw new Error('No dish selected to edit');
-    if (!fields.dish_name?.trim()) throw new Error('Dish name is required');
-    if (fields.price === '' || fields.price == null) throw new Error('Dish price is required');
+    if (!user?.id) {throw new Error('Not authenticated');}
+    if (!editingDishId) {throw new Error('No dish selected to edit');}
+    if (!fields.dish_name?.trim()) {throw new Error('Dish name is required');}
+    if (fields.price === '' || fields.price == null) {throw new Error('Dish price is required');}
 
     setLoading(true);
     setError(null);
     try {
       const payload = {
-        restaurant_id: String(user.id),
         dish_name: fields.dish_name.trim(),
         price: String(fields.price),
       };
@@ -155,7 +154,7 @@ const useDish = () => {
         payload.base_points_per_dish = String(fields.base_points_per_dish);
       }
       const image = buildImagePayload();
-      if (image) payload.dishImage = image;
+      if (image) {payload.dishImage = image;}
 
       const res = await axios.put(`/dishes/${editingDishId}/base64`, payload, {
         timeout: 120000,
@@ -168,7 +167,6 @@ const useDish = () => {
       });
       return res.data;
     } catch (e) {
-      console.log('updateDish error', e?.response?.data || e?.message || e);
       setError(e);
       Toast.show({
         type: 'error',
@@ -182,16 +180,15 @@ const useDish = () => {
   };
 
   const saveDish = async () => {
-    if (editingDishId) return updateDish();
+    if (editingDishId) {return updateDish();}
     return createDish();
   };
 
   const setDishStatus = async (dishId, status) => {
-    if (!user?.id) throw new Error('Not authenticated');
+    if (!user?.id) {throw new Error('Not authenticated');}
     setLoading(true);
     try {
       const res = await axios.patch(`/dishes/${dishId}/status`, {
-        restaurant_id: String(user.id),
         status,
       });
       await fetchDishes();

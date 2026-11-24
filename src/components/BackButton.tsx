@@ -1,4 +1,4 @@
-import { Pressable } from "react-native";
+import { Pressable } from 'react-native';
 import colors from '../theme/colors';
 import { ArrowLeftIcon } from '../assets/icons';
 import { useNavigation } from '@react-navigation/native';
@@ -20,7 +20,7 @@ const BackButton = ({ style }: { style?: any }) => {
             shadowOffset: { width: 0, height: 3 },
             shadowOpacity: 0.25,
             shadowRadius: 5,
-            ...style
+            ...style,
         }}>
         <ArrowLeftIcon width={5} height={10} color={colors.border.subtle} />
     </Pressable>;

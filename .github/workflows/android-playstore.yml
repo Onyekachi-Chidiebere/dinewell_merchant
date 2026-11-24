@@ -1,9 +1,6 @@
 name: Deploy Merchant Android to Google Play
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       track:
@@ -17,13 +14,16 @@ on:
           - beta
           - production
 
+permissions:
+  contents: read
+
 concurrency:
   group: android-playstore-merchant-${{ github.ref }}
   cancel-in-progress: true
 
 env:
   PACKAGE_NAME: com.dinewell.merchant
-  PLAY_TRACK: ${{ github.event_name == 'workflow_dispatch' && inputs.track || vars.PLAY_STORE_TRACK || 'internal' }}
+  PLAY_TRACK: ${{ inputs.track }}
   VERSION_NAME: ${{ vars.APP_VERSION_NAME || '1.0.0' }}
 
 jobs:
@@ -39,7 +39,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: "20"
           cache: yarn
 
       - name: Setup Java
@@ -63,6 +63,19 @@ jobs:
         run: |
           corepack enable
           yarn install --frozen-lockfile
+
+      - name: Generate and validate release config
+        env:
+          API_URL: ${{ vars.API_URL }}
+          STRIPE_PUBLISHABLE_KEY: ${{ vars.STRIPE_PUBLISHABLE_KEY }}
+        run: |
+          yarn config:release
+          yarn validate
+
+      - name: Smoke test staging API
+        env:
+          STAGING_API_URL: ${{ vars.STAGING_API_URL }}
+        run: yarn smoke:staging
 
       - name: Decode Android release keystore
         env:
@@ -100,7 +113,7 @@ jobs:
           echo "Signing config written (store file=release.keystore, alias=${ANDROID_KEY_ALIAS})"
 
       - name: Set Android version code
-        run: echo "VERSION_CODE=$((100 + ${{ github.run_number }}))" >> "$GITHUB_ENV"
+        run: echo "VERSION_CODE=$((10000 + GITHUB_RUN_NUMBER * 100 + GITHUB_RUN_ATTEMPT))" >> "$GITHUB_ENV"
 
       - name: Build release App Bundle (AAB)
         working-directory: android
@@ -114,10 +127,11 @@ jobs:
             --no-daemon --stacktrace
 
       - name: Upload to Google Play
-        uses: r0adkll/upload-google-play@v1.1.3
+        uses: r0adkll/upload-google-play@v1.1.4
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: ${{ env.PACKAGE_NAME }}
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           track: ${{ env.PLAY_TRACK }}
           status: completed
+          changesNotSentForReview: true

@@ -3,54 +3,16 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from '../api/axios';
 import Toast from 'react-native-toast-message';
-import { BACKEND_URL } from '../theme/constants';
+import {
+  clearSignupToken,
+  getSignupToken,
+  setSignupToken,
+} from '../services/tokenStorage';
 
 const SIGNUP_STORAGE_KEY = 'dinewell_merchant_signup';
 const emptyImage = () => ({ uri: '', fileName: '', type: '', base64: '' });
 
-/** Build a long-lived debug dump for signup upload failures (test mode). */
-const formatUploadDebugError = (err, context = {}) => {
-  const responseData = err?.response?.data;
-  let responseBody = '';
-  try {
-    responseBody =
-      responseData == null
-        ? '(no response body)'
-        : typeof responseData === 'string'
-          ? responseData
-          : JSON.stringify(responseData, null, 2);
-  } catch {
-    responseBody = String(responseData);
-  }
-
-  const lines = [
-    'UPLOAD DEBUG (stays on screen until dismissed)',
-    `time: ${new Date().toISOString()}`,
-    `platform: ${Platform.OS}`,
-    `backend: ${BACKEND_URL}`,
-    `endpoint: ${err?.config?.url || 'POST /merchant/signup/pictures-base64'}`,
-    `merchantId: ${context.merchantId ?? '(missing)'}`,
-    `merchantIdSource: ${context.merchantIdSource || '(n/a)'}`,
-    `logo: ${context.hasLogo ? 'yes' : 'no'}`,
-    `restaurantImages: ${context.imageCount ?? 0}`,
-    `axiosMessage: ${err?.message || '(none)'}`,
-    `axiosCode: ${err?.code || '(none)'}`,
-    `httpStatus: ${err?.response?.status ?? '(no HTTP response — often Network Error / timeout / wrong URL)'}`,
-    `responseURL: ${err?.config?.baseURL || ''}${err?.config?.url || ''}`,
-    `timeoutMs: ${err?.config?.timeout ?? '(default)'}`,
-    `responseBody:`,
-    responseBody,
-  ];
-
-  if (err?.request && !err?.response) {
-    lines.push(
-      'hint: Request left the app but no response came back.',
-      'Check API is up, BACKEND_URL, SSL, and Cloudinary/server crash on upload.'
-    );
-  }
-
-  return lines.join('\n');
-};
+const formatUploadDebugError = () => null;
 
 const defaultDetails = () => ({
   name: '',
@@ -85,6 +47,19 @@ const useSignup = () => {
   }, []);
 
   const clearUploadDebugError = useCallback(() => setUploadDebugError(null), []);
+
+  const signupConfig = async (extra = {}) => {
+    const signupToken = await getSignupToken();
+    if (!signupToken) {throw new Error('Signup session expired. Please start again.');}
+    return {
+      ...extra,
+      headers: { ...(extra.headers || {}), 'x-signup-token': signupToken },
+    };
+  };
+
+  const rotateSignupToken = async (data) => {
+    if (data?.signupToken) {await setSignupToken(data.signupToken);}
+  };
 
   const handleRestaurantDetails = ({ name, value }) =>
     setRestaurantDetails((prev) => ({ ...prev, [name]: value }));
@@ -122,7 +97,7 @@ const useSignup = () => {
   const loadLocalSignupProgress = async () => {
     try {
       const raw = await AsyncStorage.getItem(SIGNUP_STORAGE_KEY);
-      if (!raw) return null;
+      if (!raw) {return null;}
       return JSON.parse(raw);
     } catch {
       return null;
@@ -158,14 +133,18 @@ const useSignup = () => {
           images: prev.images?.some((img) => img?.uri) ? prev.images : defaultDetails().images,
         }));
       }
-      if (local.signupStep) setSignupStep(local.signupStep);
+      if (local.signupStep) {setSignupStep(local.signupStep);}
       return { id: local.merchantId, source: 'asyncStorage' };
     }
 
     const email = (restaurantDetailsRef.current.email || local?.email || '').trim().toLowerCase();
     if (email) {
       try {
-        const res = await axios.get('/merchant/signup/progress', { params: { email } });
+        const res = await axios.get(
+          '/merchant/signup/progress',
+          await signupConfig({ params: { email } })
+        );
+        await rotateSignupToken(res.data);
         if (res.data?.found && res.data.merchantId && !res.data.completed) {
           setMerchantId(res.data.merchantId);
           return { id: res.data.merchantId, source: 'serverByEmail' };
@@ -186,7 +165,7 @@ const useSignup = () => {
     step = signupStep,
     details = restaurantDetailsRef.current,
   } = {}) => {
-    if (id == null || id === '') return;
+    if (id == null || id === '') {return;}
     const payload = {
       merchantId: id,
       email: (email || '').trim().toLowerCase(),
@@ -205,7 +184,10 @@ const useSignup = () => {
   };
 
   const clearSignupProgress = async () => {
-    await AsyncStorage.removeItem(SIGNUP_STORAGE_KEY);
+    await Promise.all([
+      AsyncStorage.removeItem(SIGNUP_STORAGE_KEY),
+      clearSignupToken(),
+    ]);
     setMerchantId(null);
     setSignupStep('details');
     setRestaurantDetails(defaultDetails());
@@ -213,7 +195,10 @@ const useSignup = () => {
 
   /** Clear local draft so Sign up always starts blank (server drafts stay until same email is used). */
   const startFreshSignup = async () => {
-    await AsyncStorage.removeItem(SIGNUP_STORAGE_KEY);
+    await Promise.all([
+      AsyncStorage.removeItem(SIGNUP_STORAGE_KEY),
+      clearSignupToken(),
+    ]);
     setMerchantId(null);
     setSignupStep('details');
     setRestaurantDetails(defaultDetails());
@@ -223,11 +208,13 @@ const useSignup = () => {
   /** Look up an unfinished server signup for this email only — used when user enters matching details. */
   const checkIncompleteSignupByEmail = async (email) => {
     const normalized = String(email || '').trim().toLowerCase();
-    if (!normalized) return null;
+    if (!normalized) {return null;}
     try {
-      const res = await axios.get('/merchant/signup/progress', {
-        params: { email: normalized },
-      });
+      const res = await axios.get(
+        '/merchant/signup/progress',
+        await signupConfig({ params: { email: normalized } })
+      );
+      await rotateSignupToken(res.data);
       if (res.data?.found && !res.data.completed) {
         return res.data;
       }
@@ -238,7 +225,7 @@ const useSignup = () => {
   };
 
   const hydrateFromProgress = useCallback((progress, { password = '' } = {}) => {
-    if (!progress?.merchantId) return null;
+    if (!progress?.merchantId) {return null;}
     const d = progress.restaurantDetails || {};
     setMerchantId(progress.merchantId);
     setSignupStep(progress.signupStep || 'details');
@@ -271,10 +258,14 @@ const useSignup = () => {
       }
 
       const params = {};
-      if (local.merchantId) params.merchantId = local.merchantId;
-      else if (local.email) params.email = local.email;
+      if (local.merchantId) {params.merchantId = local.merchantId;}
+      else if (local.email) {params.email = local.email;}
 
-      const res = await axios.get('/merchant/signup/progress', { params });
+      const res = await axios.get(
+        '/merchant/signup/progress',
+        await signupConfig({ params })
+      );
+      await rotateSignupToken(res.data);
       if (!res.data?.found || res.data.completed) {
         await AsyncStorage.removeItem(SIGNUP_STORAGE_KEY);
         return null;
@@ -293,7 +284,7 @@ const useSignup = () => {
       return { nextScreen, progress: res.data };
     } catch (err) {
       const local = await loadLocalSignupProgress();
-      if (!local?.merchantId) return null;
+      if (!local?.merchantId) {return null;}
       const step = local.signupStep || 'address';
       const nextScreen =
         step === 'details'
@@ -303,7 +294,7 @@ const useSignup = () => {
             : step === 'pictures'
               ? 'RestaurantPictures'
               : 'Login';
-      if (nextScreen === 'Login') return null;
+      if (nextScreen === 'Login') {return null;}
       hydrateFromProgress({
         merchantId: local.merchantId,
         email: local.email,
@@ -318,7 +309,8 @@ const useSignup = () => {
   };
 
   const applySignupProgress = async (progress, { password = '' } = {}) => {
-    if (!progress?.merchantId || progress.completed) return null;
+    if (!progress?.merchantId || progress.completed) {return null;}
+    await rotateSignupToken(progress);
     const nextScreen = hydrateFromProgress(progress, { password });
     await persistSignupProgress({
       id: progress.merchantId,
@@ -334,7 +326,7 @@ const useSignup = () => {
   };
 
   const toFormFile = (asset, fallbackName) => {
-    if (!asset?.uri) return null;
+    if (!asset?.uri) {return null;}
     let uri = asset.uri;
     if (Platform.OS === 'ios' && uri && !uri.startsWith('file://') && !uri.startsWith('ph://')) {
       uri = `file://${uri}`;
@@ -359,7 +351,11 @@ const useSignup = () => {
         email: email.trim().toLowerCase(),
         location: location.trim(),
         password,
-      });
+      }, { skipAuth: true });
+      if (!res.data.signupToken) {
+        throw new Error('Signup response did not include a signup token');
+      }
+      await rotateSignupToken(res.data);
       const id = res.data.merchantId;
       if (id == null || id === '') {
         throw new Error('Signup failed: no merchant id returned');
@@ -394,12 +390,13 @@ const useSignup = () => {
       if (!streetNumber?.trim() || !streetName?.trim() || !area?.trim()) {
         throw new Error('Please fill in all address fields');
       }
-      await axios.post('/merchant/signup/address', {
+      const response = await axios.post('/merchant/signup/address', {
         merchantId: resolvedId,
         streetNumber: streetNumber.trim(),
         streetName: streetName.trim(),
         area: area.trim(),
-      });
+      }, await signupConfig());
+      await rotateSignupToken(response.data);
       setSignupStep('pictures');
       await persistSignupProgress({ id: resolvedId, step: 'pictures' });
       return { merchantId: resolvedId };
@@ -463,15 +460,16 @@ const useSignup = () => {
       }
 
       // JSON upload — same transport as login. Android multipart FormData often returns ERR_NETWORK.
-      await axios.post(
+      const response = await axios.post(
         '/merchant/signup/pictures-base64',
         {
           merchantId: String(resolvedId),
           logo: logoPart,
           restaurantImages: imageParts,
         },
-        { timeout: 120000 }
+        await signupConfig({ timeout: 120000 })
       );
+      await rotateSignupToken(response.data);
 
       setSignupStep('complete');
       await clearSignupProgress();
@@ -488,7 +486,6 @@ const useSignup = () => {
         hasLogo,
         imageCount,
       });
-      console.log('submitPictures error', debugText);
       setUploadDebugError(debugText);
       showError(err?.response?.data?.error || err?.message || 'Failed to submit pictures');
       throw err;
@@ -504,7 +501,12 @@ const useSignup = () => {
       if (resolvedId == null || resolvedId === '') {
         throw new Error('Missing merchant account. Please go back and resubmit details.');
       }
-      await axios.post('/merchant/signup/complete', { merchantId: resolvedId });
+      const response = await axios.post(
+        '/merchant/signup/complete',
+        { merchantId: resolvedId },
+        await signupConfig()
+      );
+      await rotateSignupToken(response.data);
       setSignupStep('complete');
       await clearSignupProgress();
       Toast.show({

@@ -19,7 +19,7 @@ function messaging() {
 }
 
 async function ensureAndroidChannel() {
-  if (Platform.OS !== 'android') return;
+  if (Platform.OS !== 'android') {return;}
   await notifee.createChannel({
     id: ANDROID_CHANNEL_ID,
     name: 'DineWell Merchant',
@@ -72,11 +72,11 @@ export async function registerDeviceToken(
   userId: string | number,
   appName: 'client' | 'merchant' = 'merchant'
 ) {
-  if (!userId) return null;
+  if (!userId) {return null;}
 
   try {
     const allowed = await ensurePermission();
-    if (!allowed) return null;
+    if (!allowed) {return null;}
 
     await ensureAndroidChannel();
 
@@ -85,31 +85,28 @@ export async function registerDeviceToken(
     }
 
     const token = await getToken(messaging());
-    if (!token) return null;
+    if (!token) {return null;}
 
-    await api.post(`/users/${userId}/device-tokens`, {
+    await api.post('/users/me/device-tokens', {
       token,
       platform: Platform.OS,
       app: appName,
     });
 
     return token;
-  } catch (error) {
-    console.error('registerDeviceToken error:', error);
+  } catch {
     return null;
   }
 }
 
 export async function unregisterDeviceToken(userId: string | number) {
-  if (!userId) return;
+  if (!userId) {return;}
   try {
     const token = await getToken(messaging());
     if (token) {
-      await api.delete(`/users/${userId}/device-tokens`, { data: { token } });
+      await api.delete('/users/me/device-tokens', { data: { token } });
     }
-  } catch (error) {
-    console.error('unregisterDeviceToken error:', error);
-  }
+  } catch {}
 }
 
 export function setupBackgroundHandlers() {
@@ -120,14 +117,8 @@ export function setupBackgroundHandlers() {
       }
     });
 
-    notifee.onBackgroundEvent(async ({ type, detail }) => {
-      if (type === EventType.PRESS) {
-        console.log('Notification pressed in background', detail?.notification?.data);
-      }
-    });
-  } catch (error) {
-    console.error('setupBackgroundHandlers error:', error);
-  }
+    notifee.onBackgroundEvent(async () => {});
+  } catch {}
 }
 
 export function setupForegroundHandlers() {
@@ -146,8 +137,7 @@ export function setupForegroundHandlers() {
       unsubMessage();
       unsubNotifee();
     };
-  } catch (error) {
-    console.error('setupForegroundHandlers error:', error);
+  } catch {
     return () => {};
   }
 }
@@ -158,19 +148,16 @@ export function onTokenRefresh(
 ) {
   try {
     return onMessagingTokenRefresh(messaging(), async (token) => {
-      if (!userId || !token) return;
+      if (!userId || !token) {return;}
       try {
-        await api.post(`/users/${userId}/device-tokens`, {
+        await api.post('/users/me/device-tokens', {
           token,
           platform: Platform.OS,
           app: appName,
         });
-      } catch (error) {
-        console.error('onTokenRefresh error:', error);
-      }
+      } catch {}
     });
-  } catch (error) {
-    console.error('onTokenRefresh setup error:', error);
+  } catch {
     return () => {};
   }
 }

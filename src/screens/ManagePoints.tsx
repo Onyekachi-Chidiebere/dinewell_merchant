@@ -28,7 +28,7 @@ interface OrderItem {
     imageUrl?: string;
 }
 
-const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
+const ManagePoints = ({ route }: any) => {
     const navigation = useNavigation<ManagePointsNavigationProp>();
     const { type } = route.params;
     const { dishes, fetchDishes } = useDishContext();
@@ -38,7 +38,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
     // Points rate state - fetched from server
     const [pointsRate, setPointsRate] = useState<{ issue: number; redeem: number }>({
         issue: 0, // Default fallback
-        redeem: 0 // Default fallback
+        redeem: 0, // Default fallback
     });
     const [loadingPointsRate, setLoadingPointsRate] = useState(true);
 
@@ -63,7 +63,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
     // Filter dishes based on search query and limit to 5 items
     const filteredDishes = searchQuery.trim() === ''
         ? []
-        : dishes.filter(dish =>
+        : dishes.filter((dish: any) =>
             dish.dish_name.toLowerCase().includes(searchQuery.toLowerCase())
         ).slice(0, 5);
 
@@ -88,11 +88,10 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
                 const response = await axios.get('/rate');
                 setPointsRate(response.data);
             } catch (error: any) {
-                console.error('Error fetching points rate:', error);
                 Toast.show({
                     type: 'error',
                     text1: 'Error',
-                    text2: error.response?.data?.error || 'Failed to fetch points rate'
+                    text2: error.response?.data?.error || 'Failed to fetch points rate',
                 });
                 // Keep default values on error
             } finally {
@@ -115,7 +114,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
             Toast.show({
                 type: 'error',
                 text1: 'Error',
-                text2: 'Please select a dish first'
+                text2: 'Please select a dish first',
             });
             return;
         }
@@ -131,7 +130,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
             quantity: quantity,
             points: calculatedPoints,
             isCustom: false,
-            imageUrl: selectedDish.dish_image_url
+            imageUrl: selectedDish.dish_image_url,
         };
 
         setOrderItems(prev => [...prev, newItem]);
@@ -146,7 +145,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
             Toast.show({
                 type: 'error',
                 text1: 'Error',
-                text2: 'Please fill in item name and price'
+                text2: 'Please fill in item name and price',
             });
             return;
         }
@@ -160,7 +159,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
             price: itemPrice,
             quantity: 1,
             points: calculatedPoints,
-            isCustom: true
+            isCustom: true,
         };
 
         setOrderItems(prev => [...prev, newItem]);
@@ -206,7 +205,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
             Toast.show({
                 type: 'error',
                 text1: 'Error',
-                text2: 'User not authenticated'
+                text2: 'User not authenticated',
             });
             return;
         }
@@ -214,16 +213,15 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
         setIsCreatingPoints(true);
         try {
             const requestData = {
-                restaurantId: user.id,
                 type: type.toLowerCase(), // 'issue' or 'redeem'
                 dishes: orderItems.map(item => ({
                     name: item.name,
                     price: item.price,
                     quantity: item.quantity,
-                    points: item.points
+                    points: item.points,
                 })),
                 totalPrice: totalPrice,
-                notes: `Points ${type} transaction`
+                notes: `Points ${type} transaction`,
             };
             const response = await axios.post('/points', requestData);
             const { points } = response.data;
@@ -235,11 +233,10 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
                 totalPrice: totalPrice,
                 totalPoints: totalPoints,
                 qrCode: points.qr_code,
-                pointsId: points.id
+                pointsId: points.id,
             });
 
         } catch (error: any) {
-            console.error('Error creating points transaction:', error);
             const code = error.response?.data?.code;
             const message =
                 error.response?.data?.error || 'Failed to create points transaction';
@@ -374,7 +371,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
                                         value={dishQuantity}
                                         onChangeText={setDishQuantity}
                                     />
-                                   
+
                                 </View>
 
                                 <Pressable
@@ -480,7 +477,7 @@ const ManagePoints = ({ route }: { route: { params: { type: string } } }) => {
                         </View>
                     )}
                 </View>
-                
+
             </ScrollView>
 
             {/* Fixed Bottom Section */}
@@ -561,7 +558,7 @@ const styles = StyleSheet.create({
     },
     instruction: {
         ...typography.body2,
-        color: colors.text.secondary
+        color: colors.text.secondary,
     },
     instructionContainer: {
         backgroundColor: colors.primary.light,

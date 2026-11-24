@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import api from '../api/axios';
-import Toast from 'react-native-toast-message'
+import Toast from 'react-native-toast-message';
 export interface MerchantStatistics {
   pointsIssuedToday: number;
   visitsToday: number;
@@ -27,21 +27,20 @@ export const useHome = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchStatistics = async () => {
-    if (!user?.id) return;
-    
+    if (!user?.id) {return;}
+
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get(`/merchant/${user.id}/statistics`);
+      const response = await api.get('/merchant/me/statistics');
       setStatistics(response.data);
     } catch (err: any) {
-      console.error('Error fetching merchant statistics:', err);
       Toast.show({
         type: 'error',
         text1: 'Statistics error',
-        text2: err.response?.data?.error || 'Failed to fetch statistics'
+        text2: err.response?.data?.error || 'Failed to fetch statistics',
       });
-      return null
+      return null;
     } finally {
       setLoading(false);
     }

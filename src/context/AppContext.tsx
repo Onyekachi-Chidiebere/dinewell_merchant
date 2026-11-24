@@ -3,7 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import useLogin from '../customHooks/useLogin';
 import { io, Socket } from 'socket.io-client';
 import { BACKEND_URL } from '../theme/constants';
-import axios from '../api/axios';
+import axios, { getAccessToken, refreshSession, setAuthExpiredHandler } from '../api/axios';
+import { clearAuthTokens, getAuthTokens } from '../services/tokenStorage';
 import {
   isBiometricEnabled,
   removeLoginCredentials,
@@ -12,11 +13,11 @@ import {
 import Toast from 'react-native-toast-message';
 import { usePushNotifications } from '../customHooks/usePushNotifications';
 
-function resolveApprovalStatus(userData) {
-  if (!userData) return 'pending';
-  if (userData.approvalStatus) return userData.approvalStatus;
-  if (userData.approval_status === 1) return 'active';
-  if (userData.approval_status === -1) return 'disabled';
+function resolveApprovalStatus(userData: any) {
+  if (!userData) {return 'pending';}
+  if (userData.approvalStatus) {return userData.approvalStatus;}
+  if (userData.approval_status === 1) {return 'active';}
+  if (userData.approval_status === -1) {return 'disabled';}
   return 'pending';
 }
 const AppContext = createContext<any>(null);
@@ -25,42 +26,49 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const { login: loginRequest, loading: loginLoading, error: loginError } = useLogin();
   const [user, setUser] = useState<any>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
   usePushNotifications(user?.id, 'merchant');
 
-  // Load user from storage on app start
   useEffect(() => {
-    loadUserFromStorage();
-  }, []);
-
-  const loadUserFromStorage = async () => {
-    try {
-      const storedUser = await AsyncStorage.getItem('dinewell_merchant_user');
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        setUser({
-          ...parsed,
-          approvalStatus: resolveApprovalStatus(parsed),
-        });
+    const restoreSession = async () => {
+      try {
+        const [storedUser, tokens] = await Promise.all([
+          AsyncStorage.getItem('dinewell_merchant_user'),
+          getAuthTokens(),
+        ]);
+        if (storedUser && tokens?.accessToken && tokens?.refreshToken) {
+          await refreshSession();
+          const parsed = JSON.parse(storedUser);
+          setUser({ ...parsed, approvalStatus: resolveApprovalStatus(parsed) });
+        } else {
+          await Promise.all([removeUserFromStorage(), clearAuthTokens()]);
+        }
+      } catch {
+        setUser(null);
+        await Promise.all([removeUserFromStorage(), clearAuthTokens()]);
+      } finally {
+        setSessionLoading(false);
       }
-    } catch (err) {
-      console.error('Failed to load user from storage:', err);
-    }
-  };
+    };
+    restoreSession();
+    setAuthExpiredHandler(() => {
+      setUser(null);
+      removeUserFromStorage();
+      removeLoginCredentials();
+    });
+    return () => setAuthExpiredHandler(null);
+  }, []);
 
   const saveUserToStorage = async (userData: any) => {
     try {
       await AsyncStorage.setItem('dinewell_merchant_user', JSON.stringify(userData));
-    } catch (err) {
-      console.error('Failed to save user to storage:', err);
-    }
+    } catch {}
   };
 
   const removeUserFromStorage = async () => {
     try {
       await AsyncStorage.removeItem('dinewell_merchant_user');
-    } catch (err) {
-      console.error('Failed to remove user from storage:', err);
-    }
+    } catch {}
   };
 
   const login = async (credentials: { email: string; password: string }) => {
@@ -92,8 +100,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const refreshApprovalStatus = useCallback(async () => {
-    if (!user?.id) return null;
-    const response = await axios.get(`/merchant/${user.id}/approval-status`);
+    if (!user?.id) {return null;}
+    const response = await axios.get('/merchant/me/approval-status');
     const nextStatus = response.data?.approvalStatus || resolveApprovalStatus(response.data);
     const updatedUser = {
       ...user,
@@ -112,14 +120,18 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    const newSocket = io(BACKEND_URL as string, {
+    let newSocket: Socket | null = null;
+    getAccessToken().then((token) => {
+      if (!token) {return;}
+      newSocket = io(BACKEND_URL as string, {
       transports: ['websocket'],
-      query: { userId: user.id },
+        auth: { token },
+      });
+      setSocket(newSocket);
     });
-    setSocket(newSocket);
     return () => {
       try {
-        newSocket.disconnect();
+        newSocket?.disconnect();
       } catch {}
       setSocket(null);
     };
@@ -131,20 +143,26 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           const { unregisterDeviceToken } = await import('../services/pushNotifications');
           await unregisterDeviceToken(user.id);
-        } catch (pushErr) {
-          console.error('unregisterDeviceToken error:', pushErr);
-        }
+        } catch {}
+      }
+      const tokens = await getAuthTokens();
+      if (tokens?.refreshToken) {
+        try {
+          await axios.post(
+            '/auth/logout',
+            { refreshToken: tokens.refreshToken },
+            { skipAuth: true }
+          );
+        } catch {}
       }
       setUser(null);
-      await removeUserFromStorage();
+      await Promise.all([removeUserFromStorage(), clearAuthTokens()]);
       await removeLoginCredentials();
       if (socket) {
         socket.disconnect();
         setSocket(null);
       }
-    } catch (err) {
-      console.error('Failed to logout:', err);
-    }
+    } catch {}
   };
 
   const updateUser = (userData: any) => {
@@ -158,6 +176,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const value = useMemo(
     () => ({
       user,
+      sessionLoading,
       login,
       logout,
       loginLoading,
@@ -168,7 +187,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       isRestaurantApproved: resolveApprovalStatus(user) === 'active',
       isRestaurantPending: resolveApprovalStatus(user) === 'pending',
     }),
-    [user, loginLoading, loginError, socket, refreshApprovalStatus]
+    [user, sessionLoading, loginLoading, loginError, socket, refreshApprovalStatus]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
@@ -176,6 +195,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAppContext = () => {
   const ctx = useContext(AppContext);
-  if (!ctx) throw new Error('useAppContext must be used within AppProvider');
+  if (!ctx) {throw new Error('useAppContext must be used within AppProvider');}
   return ctx;
 };

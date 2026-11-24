@@ -42,7 +42,7 @@ const ChangePasswordScreen = () => {
       Toast.show({
         type: 'error',
         text1: 'Field Error',
-        text2: 'Please fill in all fields'
+        text2: 'Please fill in all fields',
       });
       return;
     }
@@ -51,7 +51,7 @@ const ChangePasswordScreen = () => {
       Toast.show({
         type: 'error',
         text1: 'Password Error',
-        text2: 'New password and confirm password do not match'
+        text2: 'New password and confirm password do not match',
       });
       return;
     }
@@ -60,7 +60,7 @@ const ChangePasswordScreen = () => {
       Toast.show({
         type: 'error',
         text1: 'Password Error',
-        text2: 'New password must be at least 6 characters long'
+        text2: 'New password must be at least 6 characters long',
       });
       return;
     }
@@ -69,14 +69,14 @@ const ChangePasswordScreen = () => {
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'User not found. Please log in again'
+        text2: 'User not found. Please log in again',
       });
       return;
     }
 
     try {
       setLoading(true);
-      const response = await axios.put(`/merchant/${user.id}/password`, {
+      const response = await axios.put('/merchant/me/password', {
         currentPassword,
         newPassword,
       });
@@ -256,4 +256,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default ChangePasswordScreen; 
+export default ChangePasswordScreen;

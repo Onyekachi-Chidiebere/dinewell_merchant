@@ -60,17 +60,16 @@ const PointHistoryScreen = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`/restaurants/${user.id}/points/history`, {
-        params: { searchQuery: searchQuery.trim() }
+      const response = await axios.get('/restaurants/me/points/history', {
+        params: { searchQuery: searchQuery.trim() },
       });
       setTransactions(response.data || []);
     } catch (err: any) {
-      console.error('Error fetching points history:', err);
       setError(err.response?.data?.error || 'Failed to fetch transactions');
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: err.response?.data?.error || 'Failed to fetch transactions'
+        text2: err.response?.data?.error || 'Failed to fetch transactions',
       });
       setTransactions([]);
     } finally {
@@ -126,12 +125,12 @@ const PointHistoryScreen = () => {
                 <Text style={styles.dateTagText}>{item.date}</Text>
               </View>
               {item.transactions.map((transaction: Transaction) => (
-                <Pressable 
-                  key={transaction.id} 
+                <Pressable
+                  key={transaction.id}
                   onPress={() => {
                     setTrasactionDetails(transaction);
                     setShowActivity(true);
-                  }} 
+                  }}
                   style={styles.activityItem}
                 >
                   <View style={styles.activityInfo}>
@@ -156,9 +155,9 @@ const PointHistoryScreen = () => {
           keyExtractor={(item, index) => `date-${item.date}-${index}`}
         />
       )}
-    
 
-      
+
+
       <Modal
         visible={trasactionDetails !== null}
         transparent
@@ -207,7 +206,7 @@ const PointHistoryScreen = () => {
                 <View style={styles.detailValueContainer}>
                   <CalendarIcon />
                   <View style={styles.separator} />
-                  <Text style={styles.detailValue}>{new Date(trasactionDetails?.date).toLocaleDateString("en-GB", { day: '2-digit', month: 'long', year: 'numeric' })}</Text>
+                  <Text style={styles.detailValue}>{new Date(trasactionDetails?.date || 0).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</Text>
                 </View>
               </View>
               <View style={styles.detailRow}>
@@ -215,7 +214,7 @@ const PointHistoryScreen = () => {
                 <View style={styles.detailValueContainer}>
                   <ClockIcon />
                   <View style={styles.separator} />
-                  <Text style={styles.detailValue}>{new Date(trasactionDetails?.date).toLocaleTimeString("en-GB", { hour: '2-digit', minute: '2-digit', hour12: true })}</Text>
+                  <Text style={styles.detailValue}>{new Date(trasactionDetails?.date || 0).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true })}</Text>
                 </View>
               </View>
             </View>
@@ -235,7 +234,7 @@ const styles = StyleSheet.create({
   },
   section: {
     alignSelf: 'stretch',
-    gap: 4
+    gap: 4,
   },
   sectionTitle: {
     flexDirection: 'row',
@@ -297,7 +296,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 10,
     margin: 10,
-    gap: 4
+    gap: 4,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -327,7 +326,7 @@ const styles = StyleSheet.create({
   closeButtonText: {
     fontSize: 18,
     fontWeight: '900',
-    color: colors.text.white
+    color: colors.text.white,
   },
   activityContainer: {
     marginHorizontal: 16,
@@ -363,7 +362,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border.default,
   },
   activityIcon: {
-    margin:10
+    margin:10,
   },
   activityTitle: {
     ...typography.body1,
@@ -422,7 +421,7 @@ const styles = StyleSheet.create({
     ...typography.body1,
     color: colors.text.primary,
     fontWeight: 'bold',
-    marginHorizontal: 10
+    marginHorizontal: 10,
   },
   bundleDetails: {
     flexDirection: 'row',
@@ -660,7 +659,7 @@ const styles = StyleSheet.create({
     color: colors.text.tertiary,
     letterSpacing: -0.24,
     lineHeight: 16,
-    marginTop: -7
+    marginTop: -7,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -735,4 +734,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PointHistoryScreen; 
+export default PointHistoryScreen;

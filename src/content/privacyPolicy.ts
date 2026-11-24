@@ -55,7 +55,7 @@ export const PRIVACY_POLICY = {
     {
       title: '11. Contact Us',
       body:
-        'If you have any questions or concerns about this Privacy Policy, please contact our privacy team at hello@dinewell.ca, call +1 (306) 555-1234, or visit our Contact page. Our office is located at 3502 Green Brook Rd, Regina, SK S4V 1R5, Canada.',
+        'If you have any questions or concerns about this Privacy Policy, please contact our privacy team at hello@dinewell.ca.',
     },
   ],
 };

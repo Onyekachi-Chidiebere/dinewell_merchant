@@ -10,9 +10,7 @@ import {name as appName} from './app.json';
 AppRegistry.registerComponent(appName, () => App);
 
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+
   const {setupBackgroundHandlers} = require('./src/services/pushNotifications');
   setupBackgroundHandlers();
-} catch (error) {
-  console.error('Failed to init push background handlers:', error);
-}
+} catch {}

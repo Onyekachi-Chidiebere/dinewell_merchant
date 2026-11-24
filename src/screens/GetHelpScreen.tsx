@@ -11,7 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import colors from '../theme/colors';
 import typography from '../theme/typography';
-import { ArrowLeftIcon, EmailIcon, PhoneIcon, LocationIcon } from '../assets/icons';
+import { ArrowLeftIcon, EmailIcon } from '../assets/icons';
 
 type RootStackParamList = {
   Profile: undefined;
@@ -27,27 +27,12 @@ const GetHelpScreen = () => {
       id: 1,
       title: 'Email',
       subtitle: 'hello@dinewell.ca',
-      note: 'Reply within 24 hrs',
+      note: 'Support and general enquiries',
       icon: EmailIcon,
       onPress: () => Linking.openURL('mailto:hello@dinewell.ca'),
     },
     {
       id: 2,
-      title: 'Phone',
-      subtitle: '+1 (306) 555-1234',
-      note: 'Mon – Fri, 9 AM – 6 PM CST',
-      icon: PhoneIcon,
-      onPress: () => Linking.openURL('tel:+13065551234'),
-    },
-    {
-      id: 3,
-      title: 'Office',
-      subtitle: '3502 Green Brook Rd, Regina, SK S4V 1R5',
-      note: 'Canada',
-      icon: LocationIcon,
-    },
-    {
-      id: 4,
       title: 'Partnerships',
       subtitle: 'hello@dinewell.ca',
       note: 'Venue & business inquiries',
@@ -61,8 +46,7 @@ const GetHelpScreen = () => {
       key={item.id}
       style={styles.helpItem}
       onPress={item.onPress}
-      disabled={!item.onPress}
-      activeOpacity={item.onPress ? 0.7 : 1}
+      activeOpacity={0.7}
     >
       <View style={styles.helpItemLeft}>
         <View style={styles.iconContainer}>
@@ -109,7 +93,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.darksubtle,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
-    
+
     paddingBottom: 16,
   },
   headerContent: {
@@ -182,4 +166,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default GetHelpScreen; 
+export default GetHelpScreen;

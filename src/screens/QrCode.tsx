@@ -12,16 +12,17 @@ type RootStackParamList = {
     // Add other screen params as needed
 };
 
-const QrCode = ({ route }: { route: { params: { type: string, qrCode:string } } }) => {
-    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const { type, qrCode } = route.params;
+const QrCode = ({ route }: any) => {
+    const navigation = useNavigation<any>();
+    const { qrCode, pointsId } = route.params;
     const { socket } = useAppContext();
 
     useEffect(() => {
 
         if (socket) {
-            console.log('Socket connected:', socket);
             socket.on('points:completed', (data: any) => {
+                const completedId = data?.transactionId ?? data?.pointsId ?? data?.id;
+                if (String(completedId) !== String(pointsId)) {return;}
                 Alert.alert(
                     'Points Completed',
                     'The points transaction was successful.',
@@ -44,7 +45,7 @@ const QrCode = ({ route }: { route: { params: { type: string, qrCode:string } } 
                 socket.off('points:completed');
             }
         };
-    }, [socket]);
+    }, [socket, pointsId, navigation]);
     return (
         <SafeAreaView style={styles.container}>
             <View
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
     },
     instructionItem: {
         flexDirection: 'row',
-        gap: 8
+        gap: 8,
     },
     iconCircle: {
         alignSelf: 'center',
@@ -150,11 +151,11 @@ const styles = StyleSheet.create({
     },
     instruction: {
         ...typography.body2,
-        color: colors.text.secondary
+        color: colors.text.secondary,
     },
     instructionContainer: {
         gap: 8,
-        marginVertical: 30
+        marginVertical: 30,
     },
 
     container: {

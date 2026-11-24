@@ -272,4 +272,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TransactionDetailsModal; 
+export default TransactionDetailsModal;

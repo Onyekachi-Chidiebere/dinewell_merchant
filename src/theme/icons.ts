@@ -13,4 +13,4 @@ export const icons = {
 export type Icons = typeof icons;
 export type IconKeys = keyof typeof icons;
 
-export default icons; 
+export default icons;

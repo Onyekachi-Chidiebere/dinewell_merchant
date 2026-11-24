@@ -48,11 +48,11 @@ const LegalScreen = () => {
 
   return (
     <View style={styles.container}>
-      
+
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerLeft}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     fontWeight: '600',
   },
- 
+
 });
 
-export default LegalScreen; 
+export default LegalScreen;

@@ -93,9 +93,9 @@ const styles = StyleSheet.create({
   },
   mapImage: {
     position: 'absolute',
-    marginTop:  SCREEN_HEIGHT*.15,
+    marginTop:  SCREEN_HEIGHT * 0.15,
     width: '100%',
-    height: SCREEN_HEIGHT*.85,
+    height: SCREEN_HEIGHT * 0.85,
   },
   header: {
     flexDirection: 'row',
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingHorizontal: 16,
     backgroundColor: colors.background.paper,
-    paddingBottom:10
+    paddingBottom:10,
   },
   alertCard: {
     flex: 1,
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderRadius: 20,
     padding:5,
-    backgroundColor: colors.primary.main
+    backgroundColor: colors.primary.main,
   },
   alertContent: {
     flexDirection: 'row',
@@ -246,4 +246,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RestaurantDiscoveryScreen; 
+export default RestaurantDiscoveryScreen;

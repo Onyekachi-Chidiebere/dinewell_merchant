@@ -12,6 +12,9 @@ import colors from '../theme/colors';
 import typography from '../theme/typography';
 import { ArrowLeftIcon, ArrowRightIcon } from '../assets/icons';
 import CloseAccountModal from '../components/CloseAccountModal';
+import axios from '../api/axios';
+import { useAppContext } from '../context/AppContext';
+import Toast from 'react-native-toast-message';
 
 type RootStackParamList = {
   AccountSettings: undefined;
@@ -22,6 +25,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const AccountSettingsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { logout } = useAppContext();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleCloseAccount = () => {
@@ -32,10 +36,19 @@ const AccountSettingsScreen = () => {
     setIsModalVisible(false);
   };
 
-  const handleSubmitRequest = (reason: string) => {
-    console.log('Close account reason:', reason);
-    setIsModalVisible(false);
-    // Handle account closure logic here
+  const handleSubmitRequest = async (_reason: string, currentPassword: string) => {
+    try {
+      await axios.delete('/users/me', { data: { password: currentPassword } });
+      setIsModalVisible(false);
+      await logout();
+      Toast.show({ type: 'success', text1: 'Account deleted' });
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Unable to delete account',
+        text2: error.response?.data?.error || 'Check your password and try again.',
+      });
+    }
   };
 
   const menuItems = [
@@ -58,7 +71,7 @@ const AccountSettingsScreen = () => {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerLeft}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
@@ -162,7 +175,7 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.text.tertiary,
   },
- 
+
 });
 
-export default AccountSettingsScreen; 
+export default AccountSettingsScreen;

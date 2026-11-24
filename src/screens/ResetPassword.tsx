@@ -1,30 +1,29 @@
-import React, { useState, useEffect } from "react";
-import { Text, StyleSheet, View, TextInput, TouchableOpacity, Dimensions, ActivityIndicator } from "react-native";
-import LinearGradient from "react-native-linear-gradient";
-import colors from "../theme/colors";
-import axios from "../api/axios";
-import Toast from "react-native-toast-message";
-import KeyboardAwareScreen from "../components/KeyboardAwareScreen";
+import React, { useState, useEffect } from 'react';
+import { Text, StyleSheet, View, TextInput, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import colors from '../theme/colors';
+import axios from '../api/axios';
+import Toast from 'react-native-toast-message';
+import KeyboardAwareScreen from '../components/KeyboardAwareScreen';
 
-const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get('window');
 
 const ResetPassword = ({navigation, route}:any) => {
-  const { email: routeEmail, merchantId } = route?.params || {};
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const { resetToken } = route?.params || {};
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
-    // If no email or merchantId from route, navigate back
-    if (!routeEmail || !merchantId) {
+    if (!resetToken) {
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Missing verification information. Please verify OTP again.'
+        text2: 'Missing verification information. Please verify OTP again.',
       });
       navigation.goBack();
     }
-  }, [routeEmail, merchantId, navigation]);
+  }, [resetToken, navigation]);
 
   const handleResetPassword = async () => {
     // Validation
@@ -32,16 +31,16 @@ const ResetPassword = ({navigation, route}:any) => {
       Toast.show({
         type: 'error',
         text1: 'Fields Required',
-        text2: 'Please enter both new password and confirm password'
+        text2: 'Please enter both new password and confirm password',
       });
       return;
     }
 
-    if (newPassword.length < 6) {
+    if (newPassword.length < 8) {
       Toast.show({
         type: 'error',
         text1: 'Password Error',
-        text2: 'Password must be at least 6 characters long'
+        text2: 'Password must be at least 8 characters long',
       });
       return;
     }
@@ -50,16 +49,16 @@ const ResetPassword = ({navigation, route}:any) => {
       Toast.show({
         type: 'error',
         text1: 'Password Mismatch',
-        text2: 'New password and confirm password do not match'
+        text2: 'New password and confirm password do not match',
       });
       return;
     }
 
-    if (!merchantId || !routeEmail) {
+    if (!resetToken) {
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Missing verification information'
+        text2: 'Missing verification information',
       });
       return;
     }
@@ -67,10 +66,9 @@ const ResetPassword = ({navigation, route}:any) => {
     try {
       setResetting(true);
       const response = await axios.post('/merchant/forgot-password/reset', {
-        merchantId,
-        email: routeEmail,
-        newPassword
-      });
+        resetToken,
+        newPassword,
+      }, { skipAuth: true });
 
       if (response.data.success) {
         Toast.show({
@@ -80,7 +78,7 @@ const ResetPassword = ({navigation, route}:any) => {
           onHide: () => {
             // Navigate to login screen
             navigation.navigate('Login');
-          }
+          },
         });
       }
     } catch (error: any) {
@@ -88,7 +86,7 @@ const ResetPassword = ({navigation, route}:any) => {
       Toast.show({
         type: 'error',
         text1: 'Reset Failed',
-        text2: errorMessage
+        text2: errorMessage,
       });
     } finally {
       setResetting(false);
@@ -97,7 +95,7 @@ const ResetPassword = ({navigation, route}:any) => {
 
   return (
     <LinearGradient
-      colors={["#F6BD87", "#FFF6ED", "#FFFFFF"]}
+      colors={['#F6BD87', '#FFF6ED', '#FFFFFF']}
       locations={[0, 0.45, 1]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
@@ -105,7 +103,7 @@ const ResetPassword = ({navigation, route}:any) => {
     >
       <KeyboardAwareScreen embed contentContainerStyle={styles.outerWrapper}>
         <View style={styles.headerWrapper}>
-          <Text style={styles.title}>{"Reset\nPassword"}</Text>
+          <Text style={styles.title}>{'Reset\nPassword'}</Text>
         </View>
         <View style={styles.formWrapper}>
           <TextInput
@@ -131,14 +129,14 @@ const ResetPassword = ({navigation, route}:any) => {
             autoCorrect={false}
             autoCapitalize="none"
           />
-       
+
         </View>
 
         <View style={styles.bottomWrapper}>
-          <TouchableOpacity 
-            style={[styles.button, resetting && styles.buttonDisabled]} 
-            activeOpacity={0.8} 
-            onPress={handleResetPassword} 
+          <TouchableOpacity
+            style={[styles.button, resetting && styles.buttonDisabled]}
+            activeOpacity={0.8}
+            onPress={handleResetPassword}
             disabled={resetting}
           >
             {resetting ? (
@@ -162,47 +160,47 @@ const styles = StyleSheet.create({
   },
   outerWrapper: {
     flexGrow: 1,
-    justifyContent: "space-between",
+    justifyContent: 'space-between',
   },
   headerWrapper: {
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: height * 0.09, // push title high up
   },
   title: {
     fontSize: 64,
-    fontWeight: "700",
-    color: "#454B5E",
-    textAlign: "center",
+    fontWeight: '700',
+    color: '#454B5E',
+    textAlign: 'center',
     letterSpacing: 0.5,
     lineHeight: 63,
-    textShadowColor: "rgba(69, 75, 94, 0.18)",
+    textShadowColor: 'rgba(69, 75, 94, 0.18)',
     textShadowOffset: { width: 0, height: 4 },
     textShadowRadius: 8,
   },
   formWrapper: {
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: height * 0.04, // large gap after title
   },
   input: {
     width: width - 40,
     height: 64,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 32,
     borderWidth: 1,
-    borderColor: "#EAD9D1",
+    borderColor: '#EAD9D1',
     paddingHorizontal: 28,
     fontSize: 20,
-    fontStyle: "italic",
-    color: "#454B5E",
+    fontStyle: 'italic',
+    color: '#454B5E',
     marginBottom: 12,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
     shadowRadius: 6,
     elevation: 1,
   },
   bottomWrapper: {
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: height * 0.06, // large margin at the bottom
   },
   button: {
@@ -210,8 +208,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary.main,
     borderRadius: 40,
     paddingVertical: 22,
-    alignItems: "center",
-    shadowColor: "#F6BD87",
+    alignItems: 'center',
+    shadowColor: '#F6BD87',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.18,
     shadowRadius: 24,
@@ -219,8 +217,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 22,
-    fontWeight: "700",
-    color: "#fff",
+    fontWeight: '700',
+    color: '#fff',
   },
   buttonDisabled: {
     opacity: 0.6,

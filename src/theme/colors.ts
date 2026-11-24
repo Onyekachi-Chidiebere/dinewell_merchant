@@ -12,7 +12,7 @@ export const colors = {
   secondary: {
     main: '#9B87F6',
     light: '#E8E3FF',
-    middle:'#FFFCF4'
+    middle:'#FFFCF4',
   },
 
   // Background Colors
@@ -40,7 +40,7 @@ export const colors = {
     secondary: '#49526A',
     tertiary: '#828DA9',
     white: '#FFFFFF',
-    black:'#191F2D'
+    black:'#191F2D',
   },
 
   // Status Colors
@@ -66,4 +66,4 @@ export const getColor = (path: string) => {
   return path.split('.').reduce((obj, key) => obj[key], colors as any);
 };
 
-export default colors; 
+export default colors;

@@ -29,10 +29,10 @@ type RootStackParamList = {
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const formatDateForDisplay = (dateString: string): string => {
-  if (!dateString) return '';
+  if (!dateString) {return '';}
   try {
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
+    if (isNaN(date.getTime())) {return '';}
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${month}/${day}`;
@@ -42,11 +42,11 @@ const formatDateForDisplay = (dateString: string): string => {
 };
 
 const formatDateForAPI = (dateString: string, originalDate?: string): string => {
-  if (!dateString) return '';
+  if (!dateString) {return '';}
   // Assuming format is MM/DD, convert to YYYY-MM-DD
   const [month, day] = dateString.split('/');
-  if (!month || !day) return '';
-  
+  if (!month || !day) {return '';}
+
   // Try to preserve the original year if available
   let year = new Date().getFullYear();
   if (originalDate) {
@@ -59,7 +59,7 @@ const formatDateForAPI = (dateString: string, originalDate?: string): string => 
       // Use current year if parsing fails
     }
   }
-  
+
   return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 };
 
@@ -92,11 +92,11 @@ const ProfileDetailsScreen = () => {
   }, [user]);
 
   const handleUpdateProfile = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {return;}
 
     try {
       setIsUpdating(true);
-      
+
       // Check if there are any changes
       const hasRestaurantNameChange = restaurantName && restaurantName !== user.restaurant_name;
       const hasNameChange = name && name !== user.name;
@@ -124,7 +124,7 @@ const ProfileDetailsScreen = () => {
         gender: hasGenderChange ? gender : undefined,
         profileImage: selectedImage || (hasImageChange && !selectedImage ? profileImage : undefined),
       }, selectedImage);
-      
+
       if (response?.success && response?.merchant) {
         // Update user in context
         updateUser(response.merchant);
@@ -137,7 +137,6 @@ const ProfileDetailsScreen = () => {
         navigation.goBack();
       }
     } catch (error) {
-      console.error('Update profile error:', error);
     } finally {
       setIsUpdating(false);
     }
@@ -173,7 +172,7 @@ const ProfileDetailsScreen = () => {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerLeft}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
@@ -198,7 +197,7 @@ const ProfileDetailsScreen = () => {
                 style={styles.avatar}
               />
             </View>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.changeButton}
               onPress={handleChangeProfileImage}
             >
@@ -222,7 +221,7 @@ const ProfileDetailsScreen = () => {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Profile Details</Text>
-        
+
           <View style={[styles.inputField, styles.readOnlyField]}>
             <Text style={styles.inputText}>{user?.email || ''}</Text>
           </View>
@@ -236,12 +235,12 @@ const ProfileDetailsScreen = () => {
               keyboardType="phone-pad"
             />
           </View>
-      
-       
+
+
         </View>
 
         <View style={styles.buttonSection}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.updateButton, (isUpdating || loading) && styles.updateButtonDisabled]}
             onPress={handleUpdateProfile}
             disabled={isUpdating || loading}
@@ -269,7 +268,7 @@ const ProfileDetailsScreen = () => {
                   key={option}
                   style={[
                     styles.modalOption,
-                    gender === option && styles.modalOptionSelected
+                    gender === option && styles.modalOptionSelected,
                   ]}
                   onPress={() => {
                     setGender(option);
@@ -278,7 +277,7 @@ const ProfileDetailsScreen = () => {
                 >
                   <Text style={[
                     styles.modalOptionText,
-                    gender === option && styles.modalOptionTextSelected
+                    gender === option && styles.modalOptionTextSelected,
                   ]}>
                     {option}
                   </Text>

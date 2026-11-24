@@ -9,7 +9,7 @@ export function usePushNotifications(
   appName: 'client' | 'merchant' = 'merchant'
 ) {
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {return;}
 
     let unsubForeground: (() => void) | undefined;
     let unsubRefresh: (() => void) | undefined;
@@ -19,18 +19,17 @@ export function usePushNotifications(
       try {
         const push = await import('../services/pushNotifications');
         await push.registerDeviceToken(userId, appName);
-        if (cancelled) return;
+        if (cancelled) {return;}
         unsubForeground = push.setupForegroundHandlers();
         unsubRefresh = push.onTokenRefresh(userId, appName);
       } catch (error) {
-        console.error('usePushNotifications setup error:', error);
       }
     })();
 
     return () => {
       cancelled = true;
-      if (unsubForeground) unsubForeground();
-      if (unsubRefresh) unsubRefresh();
+      if (unsubForeground) {unsubForeground();}
+      if (unsubRefresh) {unsubRefresh();}
     };
   }, [userId, appName]);
 }

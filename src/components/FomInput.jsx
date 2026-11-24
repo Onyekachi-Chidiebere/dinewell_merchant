@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { TextInput, View, StyleSheet, Pressable, Text } from "react-native";
-import colors from "../theme/colors";
-import typography from "../theme/typography";
+import React, { useState } from 'react';
+import { TextInput, View, StyleSheet, Pressable, Text } from 'react-native';
+import colors from '../theme/colors';
+import typography from '../theme/typography';
 
 const FormInput = ({
     value,
@@ -11,7 +11,7 @@ const FormInput = ({
     ...rest
 }) => {
     const [isFocused, setIsFocused] = useState(false);
-    const [secured, setSecured] = useState(true)
+    const [secured, setSecured] = useState(true);
 
     return (
         <View
@@ -33,7 +33,7 @@ const FormInput = ({
                         {...rest}
                     />
                     <Pressable onPress={()=>setSecured(!secured)}>
-                    <Text style={styles.eyeIconText}>{secured ? '👁️‍🗨️':'👁️'}</Text>
+                    <Text style={styles.eyeIconText}>{secured ? '👁️‍🗨️' : '👁️'}</Text>
                     </Pressable>
                 </View> : <TextInput
                     style={[styles.input]}
@@ -54,9 +54,9 @@ export default FormInput;
 
 const styles = StyleSheet.create({
     passwordContainer:{
-        flexDirection:'row', 
-        justifyContent:'space-between', 
-        alignItems:'center'
+        flexDirection:'row',
+        justifyContent:'space-between',
+        alignItems:'center',
     },
     container: {
         borderWidth: 1,
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
         color: colors.text.secondary,
         fontSize: 16,
         fontWeight: '400',
-        margin: 8
+        margin: 8,
 
 
 

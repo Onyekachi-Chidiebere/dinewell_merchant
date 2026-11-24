@@ -5,7 +5,6 @@ export type RootStackParamList = {
   ManagePoints: {type: string};
   QrCode: {type: string; orderItems?: any[]; totalPrice?: number; totalPoints?: number; qrCode?: string; pointsId?: number};
   DishesScreen: undefined;
-  Topup: undefined;
   ManageCards: undefined;
   RestaurantDiscovery: undefined;
   AccountSettings: undefined;

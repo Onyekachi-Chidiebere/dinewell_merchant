@@ -46,7 +46,6 @@ import GetStarted from './src/screens/GetStarted';
 import Login from './src/screens/Login';
 import QrCode from './src/screens/QrCode';
 import ManagePoints from './src/screens/ManagePoints';
-import Topup from './src/screens/Topup';
 import DishesScreen from './src/screens/DishesScreen';
 import WalletScreen from './src/screens/WalletScreen';
 import ManageCards from './src/screens/ManageCards';
@@ -67,7 +66,7 @@ import ResetPassword from './src/screens/ResetPassword';
 import PendingApprovalScreen from './src/screens/PendingApprovalScreen';
 
 const Tab = createBottomTabNavigator();
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<any>();
 
 const PRIMARY_COLOR = colors.primary.main;
 const INACTIVE_LABEL_COLOR = '#828DA9';
@@ -202,7 +201,6 @@ const AppStack = () => {
               initialRouteName="BottomTab"
             >
               <Stack.Screen name="BottomTab" component={AppContent} />
-              <Stack.Screen name="Topup" component={Topup} />
               <Stack.Screen name="ManageCards" component={ManageCards} />
               <Stack.Screen name="ManagePoints" component={ManagePoints} />
               <Stack.Screen name="QrCode" component={QrCode} />
@@ -250,7 +248,10 @@ const PendingStack = () => {
 };
 
 const Root = () => {
-  const { user, isRestaurantApproved } = useAppContext();
+  const { user, isRestaurantApproved, sessionLoading } = useAppContext();
+  if (sessionLoading) {
+    return null;
+  }
   if (!user) {
     return <AuthWithSignup />;
   }

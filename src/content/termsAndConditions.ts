@@ -63,7 +63,7 @@ export const TERMS_AND_CONDITIONS = {
     {
       title: '12. Contact',
       body:
-        'Dine Well Service Solutions Ltd.\n3502 Green Brook Rd, Regina, Saskatchewan, Canada S4V 1R5\nhello@dinewell.ca  |  +1 (306) 555-1234',
+        'Dine Well Service Solutions Ltd.\nhello@dinewell.ca',
     },
   ],
 };

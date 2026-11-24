@@ -1,8 +1,6 @@
 name: iOS Build & Deploy (TestFlight)
 
 on:
-  push:
-    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -24,7 +22,7 @@ jobs:
     # App Store Connect requires iOS 26 SDK (Xcode 26+) as of 2026.
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Select Xcode 26
         run: |
@@ -33,7 +31,7 @@ jobs:
           echo "iOS SDK: $(xcrun --sdk iphoneos --show-sdk-version)"
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "yarn"
@@ -42,6 +40,22 @@ jobs:
         run: |
           corepack enable
           yarn install --frozen-lockfile
+
+      - name: Generate and validate release config
+        env:
+          API_URL: ${{ vars.API_URL }}
+          STRIPE_PUBLISHABLE_KEY: ${{ vars.STRIPE_PUBLISHABLE_KEY }}
+        run: |
+          yarn config:release
+          yarn validate
+
+      - name: Smoke test staging API
+        env:
+          STAGING_API_URL: ${{ vars.STAGING_API_URL }}
+        run: yarn smoke:staging
+
+      - name: Set unique build number
+        run: echo "IOS_BUILD_NUMBER=$((GITHUB_RUN_NUMBER * 100 + GITHUB_RUN_ATTEMPT))" >> "$GITHUB_ENV"
 
       - name: Build JS bundle for iOS
         run: yarn build-ios
@@ -52,7 +66,7 @@ jobs:
           pod install --repo-update
 
       - name: Import signing certificate
-        uses: apple-actions/import-codesign-certs@v6
+        uses: apple-actions/import-codesign-certs@v3
         with:
           p12-file-base64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
           p12-password: ${{ secrets.IOS_CERTIFICATE_P12_PASSWORD }}
@@ -130,7 +144,7 @@ jobs:
             CODE_SIGN_IDENTITY="$IOS_CODE_SIGN_IDENTITY" \
             DEVELOPMENT_TEAM="$IOS_TEAM_ID" \
             PROVISIONING_PROFILE="$IOS_PROFILE_UUID" \
-            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            CURRENT_PROJECT_VERSION="$IOS_BUILD_NUMBER" \
             archive 2>&1 | tee build/archive.log
           ARCHIVE_STATUS=${PIPESTATUS[0]}
           set -e
@@ -174,13 +188,12 @@ jobs:
           fi
 
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: ios-ipa
           path: build/export/*.ipa
 
-      - name: Upload to TestFlight
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+      - name: Locate IPA for TestFlight
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -192,7 +205,6 @@ jobs:
           echo "IPA_PATH=${ipa_files[0]}" >> "$GITHUB_ENV"
 
       - name: Validate App Store Connect API credentials
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
         env:
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
@@ -257,7 +269,6 @@ jobs:
           echo "APPSTORE_API_KEY_ID_CLEAN=$KEY_ID" >> "$GITHUB_ENV"
 
       - name: Upload app to TestFlight
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
           echo "Uploading $IPA_PATH to TestFlight (altool)..."

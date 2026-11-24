@@ -82,4 +82,4 @@ export const typography = {
 export type Typography = typeof typography;
 export type TypographyKeys = keyof typeof typography;
 
-export default typography; 
+export default typography;

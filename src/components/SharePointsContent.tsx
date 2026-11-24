@@ -47,7 +47,7 @@ const SharePointsContent = ({ availablePoints, onShare }: Props) => {
       <View style={styles.iconCircle}>
         <LinearGradient
           style={styles.iconGradient}
-         
+
           start={{ x: 0.25, y: 0.25 }}
           end={{ x: 0.5, y: 2 }}
           locations={[0, 0.95]}
@@ -65,7 +65,7 @@ const SharePointsContent = ({ availablePoints, onShare }: Props) => {
 
       {/* Instructions */}
       <View style={styles.instructionsContainer}>
-       
+
         <View style={styles.instructionsItem}>
           <Text style={styles.instructionsNo}>1</Text>
           <Text style={styles.instructions}>Input the username of the recipient in the field provided.</Text>
@@ -123,17 +123,17 @@ const SharePointsContent = ({ availablePoints, onShare }: Props) => {
         </View>
 
         {/* Transfer Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[
             styles.transferButton,
-            (!points || !username) && styles.transferButtonDisabled
+            (!points || !username) && styles.transferButtonDisabled,
           ]}
           onPress={handleShare}
           disabled={!points || !username}
         >
           <Text style={[
             styles.transferButtonText,
-            
+
           ]}>Transfer</Text>
         </TouchableOpacity>
       </View>
@@ -319,4 +319,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default SharePointsContent; 
+export default SharePointsContent;

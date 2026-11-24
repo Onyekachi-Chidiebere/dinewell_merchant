@@ -1,0 +1,42 @@
+name: Merchant PR CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: yarn
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - name: Install dependencies
+        run: |
+          corepack enable
+          yarn install --frozen-lockfile
+      - name: Generate non-secret test configuration
+        env:
+          API_URL: https://staging.invalid
+          STRIPE_PUBLISHABLE_KEY: pk_test_ci_non_secret
+        run: yarn config:dev
+      - name: Typecheck
+        run: yarn typecheck
+      - name: ESLint
+        run: yarn lint
+      - name: Jest
+        run: yarn test --ci --runInBand
+      - name: Android debug validation build
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace

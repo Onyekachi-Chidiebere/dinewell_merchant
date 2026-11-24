@@ -46,7 +46,7 @@ const RestaurantPictures = ({ navigation, route }: { navigation: any; route?: an
 
   const pickerOptions = {
     mediaType: 'photo' as const,
-    quality: 0.55,
+    quality: 0.5 as const,
     maxWidth: 1024,
     maxHeight: 1024,
     selectionLimit: 1,

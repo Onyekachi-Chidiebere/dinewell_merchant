@@ -9,13 +9,13 @@ interface CardContextType {
   setCardNumber: (value: string) => void;
   setExpiry: (value: string) => void;
   setCvv: (value: string) => void;
-  
+
   // Card operations
-  addCard: (cardDetails?: any) => Promise<void>;
-  fetchCards: () => Promise<void>;
-  setDefaultCard: (cardId: string) => Promise<void>;
-  chargeCard: (cardId: string, amount: number, description: string) => Promise<void>;
-  
+  addCard: (cardDetails?: any) => Promise<any>;
+  fetchCards: () => Promise<any>;
+  setDefaultCard: (cardId: string) => Promise<any>;
+  chargeCard: (cardId: string, amount: number, description: string) => Promise<any>;
+
   // Cards list and state
   cards: any[];
   loading: boolean;

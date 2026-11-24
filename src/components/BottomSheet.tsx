@@ -48,7 +48,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
 
   const animateClosed = useCallback(
     (notifyParent: boolean) => {
-      if (isClosingRef.current) return;
+      if (isClosingRef.current) {return;}
       isClosingRef.current = true;
 
       Animated.parallel([
@@ -140,7 +140,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     })
   ).current;
 
-  if (!shouldRender) return null;
+  if (!shouldRender) {return null;}
 
   return (
     <Animated.View style={[styles.overlay, { opacity: backdropOpacity }]} pointerEvents="auto">

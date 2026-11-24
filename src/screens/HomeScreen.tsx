@@ -77,7 +77,7 @@ const HomeScreen = () => {
   } : mockWeeklyStats;
 
   // Convert recent transactions to the expected format
-  const recentTransactions: PointsTransaction[] = statistics ? 
+  const recentTransactions: PointsTransaction[] = statistics ?
     statistics.recentTransactions.map(transaction => ({
       id: transaction.id.toString(),
       points: transaction.points,
@@ -242,19 +242,19 @@ const HomeScreen = () => {
               <View style={styles.transactionLeft}>
                 <View style={[
                   styles.restaurantIcon,
-                  { backgroundColor: getRestaurantColor(transaction.restaurant) }
+                  { backgroundColor: getRestaurantColor(transaction.restaurant) },
                 ]}>
                   <Text style={styles.restaurantInitial}>{transaction.restaurant[0]}</Text>
                 </View>
                 <View style={[
                   styles.arrowContainer,
-                  { backgroundColor: transaction.type === 'issued' ? '#E6FBEE' : '#FFEEF1' }
+                  { backgroundColor: transaction.type === 'issued' ? '#E6FBEE' : '#FFEEF1' },
                 ]}>
                   <Image
                     source={transaction.type === 'issued' ? icons.arrowDown : icons.arrowUp}
                     style={[
                       styles.transactionArrow,
-                      { tintColor: transaction.type === 'issued' ? '#7FCE9D' : '#E76773' }
+                      { tintColor: transaction.type === 'issued' ? '#7FCE9D' : '#E76773' },
                     ]}
                   />
                 </View>
@@ -274,7 +274,7 @@ const HomeScreen = () => {
               <View style={styles.transactionRight}>
                 <Text style={[
                   styles.transactionAmount,
-                  transaction.type === 'issued' ? styles.amountReceived : styles.amountRedeemed
+                  transaction.type === 'issued' ? styles.amountReceived : styles.amountRedeemed,
                 ]}>
                   {transaction.type === 'issued' ? '+' : '-'} {transaction.amount}
                 </Text>
@@ -294,7 +294,7 @@ const getRestaurantColor = (restaurant: string): string => {
     'MON LAPIN': '#5D47C1',
     'KFC': '#FC4C5D',
     'EDULIS': '#2FB763',
-    'RPM': '#FFB800'
+    'RPM': '#FFB800',
   };
   return colors[restaurant] || '#5D47C1';
 };
@@ -824,4 +824,4 @@ const styles = StyleSheet.create<Styles>({
   },
 });
 
-export default HomeScreen; 
+export default HomeScreen;

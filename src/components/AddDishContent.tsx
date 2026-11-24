@@ -22,29 +22,30 @@ const AddDishContent = () => {
     loadDishForEdit,
     editingDishId,
   } = useDishContext();
+  const dishSheetData = sheetData as { mode?: 'create' | 'edit'; dish?: any } | null;
 
-  const isEdit = sheetData?.mode === 'edit' || !!editingDishId;
+  const isEdit = dishSheetData?.mode === 'edit' || !!editingDishId;
 
   useEffect(() => {
-    if (sheetData?.mode === 'edit' && sheetData?.dish) {
-      loadDishForEdit(sheetData.dish);
-    } else if (sheetData?.mode !== 'edit') {
+    if (dishSheetData?.mode === 'edit' && dishSheetData?.dish) {
+      loadDishForEdit(dishSheetData.dish);
+    } else if (dishSheetData?.mode !== 'edit') {
       reset();
     }
-  }, [sheetData?.mode, sheetData?.dish?.id]);
+  }, [dishSheetData?.mode, dishSheetData?.dish?.id]);
 
   const pickDishImage = () => {
     launchImageLibrary(
       {
         mediaType: 'photo',
-        quality: 0.55,
+        quality: 0.5,
         maxWidth: 1024,
         maxHeight: 1024,
         selectionLimit: 1,
         includeBase64: true,
       },
       (response) => {
-        if (response.didCancel || response.errorCode) return;
+        if (response.didCancel || response.errorCode) {return;}
         if (response.assets && response.assets.length > 0) {
           setImage(response.assets[0]);
         }
