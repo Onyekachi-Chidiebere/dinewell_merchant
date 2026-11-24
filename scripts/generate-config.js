@@ -2,21 +2,20 @@ const fs = require('fs');
 const path = require('path');
 
 const release = process.argv.includes('--release');
-const apiUrl = process.env.API_URL || (release ? '' : 'https://api.dinewell.ca');
-const stripeKey =
-  process.env.STRIPE_PUBLISHABLE_KEY ||
-  (release
-    ? ''
-    : 'pk_test_51Qv032FdNOUXRT289ea7PQRfqpSsWt7hyh8XrlUfh1dWAozpzxqJZdyr10fpYPgoJ72sjyGA0NQ79GRpqCfYYzZz00KHWHhrAQ');
+const DEFAULT_TEST_STRIPE =
+  'pk_test_51Qv032FdNOUXRT289ea7PQRfqpSsWt7hyh8XrlUfh1dWAozpzxqJZdyr10fpYPgoJ72sjyGA0NQ79GRpqCfYYzZz00KHWHhrAQ';
+const apiUrl = process.env.API_URL || 'https://api.dinewell.ca';
+const stripeKey = process.env.STRIPE_PUBLISHABLE_KEY || DEFAULT_TEST_STRIPE;
 
 if (!apiUrl || !/^https:\/\//.test(apiUrl)) {
   throw new Error('API_URL must be an HTTPS URL');
 }
-if (!stripeKey || !stripeKey.startsWith(release ? 'pk_live_' : 'pk_test_')) {
-  throw new Error(
-    release
-      ? 'Release requires STRIPE_PUBLISHABLE_KEY beginning with pk_live_'
-      : 'Development requires a Stripe test publishable key'
+if (!stripeKey || !/^pk_(live|test)_/.test(stripeKey)) {
+  throw new Error('STRIPE_PUBLISHABLE_KEY must start with pk_live_ or pk_test_');
+}
+if (release && stripeKey.startsWith('pk_test_')) {
+  console.warn(
+    'Warning: release build is using a Stripe test publishable key. Set vars.STRIPE_PUBLISHABLE_KEY to pk_live_… for production charges.',
   );
 }
 

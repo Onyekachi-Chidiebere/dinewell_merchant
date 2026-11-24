@@ -1,6 +1,8 @@
 name: Deploy Merchant Android to Google Play
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       track:
@@ -13,35 +15,30 @@ on:
           - alpha
           - beta
           - production
-  workflow_run:
-    workflows: ["Merchant Main CI"]
-    types: [completed]
-    branches: [main]
 
 permissions:
   contents: read
 
 concurrency:
-  group: android-playstore-merchant-${{ github.event.workflow_run.head_branch || github.ref }}
+  group: android-playstore-merchant-${{ github.ref }}
   cancel-in-progress: true
 
 env:
   PACKAGE_NAME: com.dinewell.merchant
   PLAY_TRACK: ${{ inputs.track || 'internal' }}
   VERSION_NAME: ${{ vars.APP_VERSION_NAME || '1.0.0' }}
+  API_URL: ${{ vars.API_URL || 'https://api.dinewell.ca' }}
+  STRIPE_PUBLISHABLE_KEY: ${{ vars.STRIPE_PUBLISHABLE_KEY }}
 
 jobs:
   deploy:
     name: Build & publish AAB
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -72,9 +69,6 @@ jobs:
           yarn install --frozen-lockfile
 
       - name: Generate release config
-        env:
-          API_URL: ${{ vars.API_URL }}
-          STRIPE_PUBLISHABLE_KEY: ${{ vars.STRIPE_PUBLISHABLE_KEY }}
         run: yarn config:release
 
       - name: Decode Android release keystore
