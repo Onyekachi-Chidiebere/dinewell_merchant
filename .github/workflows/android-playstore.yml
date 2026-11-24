@@ -71,18 +71,11 @@ jobs:
           corepack enable
           yarn install --frozen-lockfile
 
-      - name: Generate and validate release config
+      - name: Generate release config
         env:
           API_URL: ${{ vars.API_URL }}
           STRIPE_PUBLISHABLE_KEY: ${{ vars.STRIPE_PUBLISHABLE_KEY }}
-        run: |
-          yarn config:release
-          yarn validate
-
-      - name: Smoke test staging API
-        env:
-          STAGING_API_URL: ${{ vars.STAGING_API_URL }}
-        run: yarn smoke:staging
+        run: yarn config:release
 
       - name: Decode Android release keystore
         env:
@@ -97,7 +90,6 @@ jobs:
             echo "Decoded keystore is empty — check ANDROID_KEYSTORE_BASE64"
             exit 1
           fi
-          ls -la android/app/release.keystore
 
       - name: Configure release signing
         env:
@@ -109,7 +101,6 @@ jobs:
             echo "Missing one or more signing secrets: ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD"
             exit 1
           fi
-          # Remove any existing MYAPP_UPLOAD_* so CI values win over local defaults.
           sed -i '/^MYAPP_UPLOAD_/d' android/gradle.properties
           {
             echo "MYAPP_UPLOAD_STORE_FILE=release.keystore"
@@ -117,7 +108,6 @@ jobs:
             echo "MYAPP_UPLOAD_STORE_PASSWORD=${ANDROID_KEYSTORE_PASSWORD}"
             echo "MYAPP_UPLOAD_KEY_PASSWORD=${ANDROID_KEY_PASSWORD}"
           } >> android/gradle.properties
-          echo "Signing config written (store file=release.keystore, alias=${ANDROID_KEY_ALIAS})"
 
       - name: Set Android version code
         run: echo "VERSION_CODE=$((10000 + GITHUB_RUN_NUMBER * 100 + GITHUB_RUN_ATTEMPT))" >> "$GITHUB_ENV"

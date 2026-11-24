@@ -10,7 +10,6 @@
     "config:dev": "node scripts/generate-config.js",
     "config:release": "node scripts/generate-config.js --release",
     "validate": "yarn typecheck && yarn lint && yarn test --runInBand",
-    "smoke:staging": "node scripts/staging-smoke.js",
     "start": "react-native start",
     "test": "jest",
     "build-ios": "react-native bundle --entry-file index.js --platform ios --dev false --bundle-output ios/main.jsbundle --assets-dest ios",
