@@ -123,6 +123,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: ${{ env.PACKAGE_NAME }}
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
-          track: ${{ env.PLAY_TRACK }}
-          status: completed
+          # v1.1.4 defaults tracks=production and ignores deprecated `track`
+          tracks: ${{ env.PLAY_TRACK }}
+          status: draft
           changesNotSentForReview: true
