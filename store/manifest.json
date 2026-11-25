@@ -1,0 +1,364 @@
+{
+  "playstore": [
+    {
+      "name": "GP_Phone_1080x1920_01",
+      "id": "5068:4254",
+      "file": "GP_Phone_1080x1920_01.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 343327,
+      "secs": 2.5
+    },
+    {
+      "name": "GP_Phone_1080x1920_02",
+      "id": "5068:4270",
+      "file": "GP_Phone_1080x1920_02.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 372938,
+      "secs": 2.17
+    },
+    {
+      "name": "GP_Phone_1080x1920_03",
+      "id": "5068:4286",
+      "file": "GP_Phone_1080x1920_03.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 219236,
+      "secs": 1.9
+    },
+    {
+      "name": "GP_Phone_1080x1920_04",
+      "id": "5068:4302",
+      "file": "GP_Phone_1080x1920_04.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 252954,
+      "secs": 1.98
+    },
+    {
+      "name": "GP_Phone_1080x1920_05",
+      "id": "5068:4318",
+      "file": "GP_Phone_1080x1920_05.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 314284,
+      "secs": 2.01
+    },
+    {
+      "name": "GP_Phone_1080x1920_06",
+      "id": "5068:4334",
+      "file": "GP_Phone_1080x1920_06.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 357274,
+      "secs": 2.12
+    },
+    {
+      "name": "GP_Phone_1080x1920_07",
+      "id": "5068:4350",
+      "file": "GP_Phone_1080x1920_07.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 260482,
+      "secs": 2.47
+    },
+    {
+      "name": "GP_Phone_1080x1920_08",
+      "id": "5068:4366",
+      "file": "GP_Phone_1080x1920_08.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 232612,
+      "secs": 2.31
+    },
+    {
+      "name": "GP_Phone_1440x2560_01",
+      "id": "5068:4382",
+      "file": "GP_Phone_1440x2560_01.png",
+      "width": 1440,
+      "height": 2560,
+      "bytes": 526816,
+      "secs": 2.69
+    },
+    {
+      "name": "GP_Phone_1440x2560_02",
+      "id": "5068:4398",
+      "file": "GP_Phone_1440x2560_02.png",
+      "width": 1440,
+      "height": 2560,
+      "bytes": 584082,
+      "secs": 2.63
+    },
+    {
+      "name": "GP_Phone_1440x2560_03",
+      "id": "5068:4414",
+      "file": "GP_Phone_1440x2560_03.png",
+      "width": 1440,
+      "height": 2560,
+      "bytes": 330672,
+      "secs": 2.48
+    },
+    {
+      "name": "GP_Phone_1440x2560_04",
+      "id": "5068:4430",
+      "file": "GP_Phone_1440x2560_04.png",
+      "width": 1440,
+      "height": 2560,
+      "bytes": 392565,
+      "secs": 3.09
+    },
+    {
+      "name": "GP_Phone_1440x2560_05",
+      "id": "5068:4446",
+      "file": "GP_Phone_1440x2560_05.png",
+      "width": 1440,
+      "height": 2560,
+      "bytes": 480084,
+      "secs": 2.62
+    },
+    {
+      "name": "GP_Phone_1440x2560_06",
+      "id": "5068:4462",
+      "file": "GP_Phone_1440x2560_06.png",
+      "width": 1440,
+      "height": 2560,
+      "bytes": 562240,
+      "secs": 3.27
+    },
+    {
+      "name": "GP_Phone_1440x2560_07",
+      "id": "5068:4478",
+      "file": "GP_Phone_1440x2560_07.png",
+      "width": 1440,
+      "height": 2560,
+      "bytes": 397410,
+      "secs": 3.03
+    },
+    {
+      "name": "GP_Phone_1440x2560_08",
+      "id": "5068:4494",
+      "file": "GP_Phone_1440x2560_08.png",
+      "width": 1440,
+      "height": 2560,
+      "bytes": 360926,
+      "secs": 2.7
+    },
+    {
+      "name": "GP_Tablet7_1200x1920_01",
+      "id": "5068:4510",
+      "file": "GP_Tablet7_1200x1920_01.png",
+      "width": 1200,
+      "height": 1920,
+      "bytes": 340403,
+      "secs": 2.95
+    },
+    {
+      "name": "GP_Tablet7_1200x1920_02",
+      "id": "5068:4526",
+      "file": "GP_Tablet7_1200x1920_02.png",
+      "width": 1200,
+      "height": 1920,
+      "bytes": 363509,
+      "secs": 2.71
+    },
+    {
+      "name": "GP_Tablet7_1200x1920_03",
+      "id": "5068:4542",
+      "file": "GP_Tablet7_1200x1920_03.png",
+      "width": 1200,
+      "height": 1920,
+      "bytes": 223044,
+      "secs": 2.31
+    },
+    {
+      "name": "GP_Tablet7_1200x1920_04",
+      "id": "5068:4558",
+      "file": "GP_Tablet7_1200x1920_04.png",
+      "width": 1200,
+      "height": 1920,
+      "bytes": 252468,
+      "secs": 2.38
+    },
+    {
+      "name": "GP_Tablet7_1200x1920_05",
+      "id": "5068:4574",
+      "file": "GP_Tablet7_1200x1920_05.png",
+      "width": 1200,
+      "height": 1920,
+      "bytes": 309466,
+      "secs": 2.38
+    },
+    {
+      "name": "GP_Tablet7_1200x1920_06",
+      "id": "5068:4590",
+      "file": "GP_Tablet7_1200x1920_06.png",
+      "width": 1200,
+      "height": 1920,
+      "bytes": 349194,
+      "secs": 2.52
+    },
+    {
+      "name": "GP_Tablet7_1200x1920_07",
+      "id": "5068:4606",
+      "file": "GP_Tablet7_1200x1920_07.png",
+      "width": 1200,
+      "height": 1920,
+      "bytes": 257248,
+      "secs": 2.78
+    },
+    {
+      "name": "GP_Tablet7_1200x1920_08",
+      "id": "5068:4622",
+      "file": "GP_Tablet7_1200x1920_08.png",
+      "width": 1200,
+      "height": 1920,
+      "bytes": 236238,
+      "secs": 2.55
+    },
+    {
+      "name": "GP_Tablet10_1600x2560_01",
+      "id": "5068:4638",
+      "file": "GP_Tablet10_1600x2560_01.png",
+      "width": 1600,
+      "height": 2560,
+      "bytes": 515330,
+      "secs": 2.85
+    },
+    {
+      "name": "GP_Tablet10_1600x2560_02",
+      "id": "5068:4654",
+      "file": "GP_Tablet10_1600x2560_02.png",
+      "width": 1600,
+      "height": 2560,
+      "bytes": 569756,
+      "secs": 2.76
+    },
+    {
+      "name": "GP_Tablet10_1600x2560_03",
+      "id": "5068:4670",
+      "file": "GP_Tablet10_1600x2560_03.png",
+      "width": 1600,
+      "height": 2560,
+      "bytes": 335174,
+      "secs": 3.04
+    },
+    {
+      "name": "GP_Tablet10_1600x2560_04",
+      "id": "5068:4686",
+      "file": "GP_Tablet10_1600x2560_04.png",
+      "width": 1600,
+      "height": 2560,
+      "bytes": 386064,
+      "secs": 3.1
+    },
+    {
+      "name": "GP_Tablet10_1600x2560_05",
+      "id": "5068:4702",
+      "file": "GP_Tablet10_1600x2560_05.png",
+      "width": 1600,
+      "height": 2560,
+      "bytes": 469929,
+      "secs": 2.91
+    },
+    {
+      "name": "GP_Tablet10_1600x2560_06",
+      "id": "5068:4718",
+      "file": "GP_Tablet10_1600x2560_06.png",
+      "width": 1600,
+      "height": 2560,
+      "bytes": 547800,
+      "secs": 3.85
+    },
+    {
+      "name": "GP_Tablet10_1600x2560_07",
+      "id": "5068:4734",
+      "file": "GP_Tablet10_1600x2560_07.png",
+      "width": 1600,
+      "height": 2560,
+      "bytes": 392555,
+      "secs": 2.99
+    },
+    {
+      "name": "GP_Tablet10_1600x2560_08",
+      "id": "5068:4750",
+      "file": "GP_Tablet10_1600x2560_08.png",
+      "width": 1600,
+      "height": 2560,
+      "bytes": 360166,
+      "secs": 3.05
+    },
+    {
+      "name": "GP_Foldable_1080x1080_01",
+      "id": "5068:4766",
+      "file": "GP_Foldable_1080x1080_01.png",
+      "width": 1080,
+      "height": 1080,
+      "bytes": 217734,
+      "secs": 2.97
+    },
+    {
+      "name": "GP_Foldable_1080x1080_02",
+      "id": "5068:4782",
+      "file": "GP_Foldable_1080x1080_02.png",
+      "width": 1080,
+      "height": 1080,
+      "bytes": 225164,
+      "secs": 2.74
+    },
+    {
+      "name": "GP_Foldable_1080x1080_03",
+      "id": "5068:4798",
+      "file": "GP_Foldable_1080x1080_03.png",
+      "width": 1080,
+      "height": 1080,
+      "bytes": 141926,
+      "secs": 2.95
+    },
+    {
+      "name": "GP_Foldable_1080x1080_04",
+      "id": "5068:4814",
+      "file": "GP_Foldable_1080x1080_04.png",
+      "width": 1080,
+      "height": 1080,
+      "bytes": 161917,
+      "secs": 3.39
+    },
+    {
+      "name": "GP_Foldable_1920x1440_01",
+      "id": "5068:4830",
+      "file": "GP_Foldable_1920x1440_01.png",
+      "width": 1920,
+      "height": 1440,
+      "bytes": 321839,
+      "secs": 3.04
+    },
+    {
+      "name": "GP_Foldable_1920x1440_02",
+      "id": "5068:4846",
+      "file": "GP_Foldable_1920x1440_02.png",
+      "width": 1920,
+      "height": 1440,
+      "bytes": 345371,
+      "secs": 2.74
+    },
+    {
+      "name": "GP_Foldable_1920x1440_03",
+      "id": "5068:4862",
+      "file": "GP_Foldable_1920x1440_03.png",
+      "width": 1920,
+      "height": 1440,
+      "bytes": 225297,
+      "secs": 2.65
+    },
+    {
+      "name": "GP_Foldable_1920x1440_04",
+      "id": "5068:4878",
+      "file": "GP_Foldable_1920x1440_04.png",
+      "width": 1920,
+      "height": 1440,
+      "bytes": 245350,
+      "secs": 2.54
+    }
+  ]
+}

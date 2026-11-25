@@ -51,8 +51,15 @@ const useSignup = () => {
   const signupConfig = async (extra = {}) => {
     const signupToken = await getSignupToken();
     if (!signupToken) {throw new Error('Signup session expired. Please start again.');}
+    const params = extra.params
+      ? { ...extra.params, signupToken }
+      : extra.params;
     return {
+      signupToken,
+      // Never attach session Bearer / never run refresh-on-401 during signup
+      skipAuth: true,
       ...extra,
+      ...(params ? { params } : {}),
       headers: { ...(extra.headers || {}), 'x-signup-token': signupToken },
     };
   };
@@ -390,12 +397,14 @@ const useSignup = () => {
       if (!streetNumber?.trim() || !streetName?.trim() || !area?.trim()) {
         throw new Error('Please fill in all address fields');
       }
+      const { signupToken, ...config } = await signupConfig();
       const response = await axios.post('/merchant/signup/address', {
         merchantId: resolvedId,
         streetNumber: streetNumber.trim(),
         streetName: streetName.trim(),
         area: area.trim(),
-      }, await signupConfig());
+        signupToken,
+      }, config);
       await rotateSignupToken(response.data);
       setSignupStep('pictures');
       await persistSignupProgress({ id: resolvedId, step: 'pictures' });
@@ -460,14 +469,16 @@ const useSignup = () => {
       }
 
       // JSON upload — same transport as login. Android multipart FormData often returns ERR_NETWORK.
+      const { signupToken, ...config } = await signupConfig({ timeout: 120000 });
       const response = await axios.post(
         '/merchant/signup/pictures-base64',
         {
           merchantId: String(resolvedId),
           logo: logoPart,
           restaurantImages: imageParts,
+          signupToken,
         },
-        await signupConfig({ timeout: 120000 })
+        config
       );
       await rotateSignupToken(response.data);
 
@@ -501,10 +512,11 @@ const useSignup = () => {
       if (resolvedId == null || resolvedId === '') {
         throw new Error('Missing merchant account. Please go back and resubmit details.');
       }
+      const { signupToken, ...config } = await signupConfig();
       const response = await axios.post(
         '/merchant/signup/complete',
-        { merchantId: resolvedId },
-        await signupConfig()
+        { merchantId: resolvedId, signupToken },
+        config
       );
       await rotateSignupToken(response.data);
       setSignupStep('complete');

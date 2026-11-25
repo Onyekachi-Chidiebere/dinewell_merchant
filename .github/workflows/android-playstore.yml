@@ -126,4 +126,6 @@ jobs:
           # v1.1.4 defaults tracks=production and ignores deprecated `track`
           tracks: ${{ env.PLAY_TRACK }}
           status: draft
-          changesNotSentForReview: true
+          # Omit changesNotSentForReview while Play sends changes for review
+          # automatically. Set to true only after a rejection / when Console
+          # requires holding changes in the managed-publishing queue.
